@@ -1,0 +1,50 @@
+硬件的访问实质上是访问寄存器
+
+寄存器与内存的区别
+寄存器和RAM的主要不同在于寄存器的操作有副作用(side effect 边际效果)：
+	读取某个地址时可能导致该地址内容发生变化，比如很多设备的中断状态寄存器只要一读取，便自动清零
+	
+内存空间与I/O空间(x86)
+在x86处理器中存在I/O空间和内存空间的独立。32位的x86系统中I/O大小为64K，内存为4G
+MIPS、ARM、powerPC只支持内存空间
+
+当一个寄存器位于IO空间的时候叫IO端口，位于内存空间的时候叫IO内存
+
+
+IO端口的操作
+1.申请
+	struct resource *request_region(unsigned long first,unsigned long n,const char *name)
+	申请从first开始的n个端口，name参数是设备名字，如果成功返回非空，否则返回NULL
+	/proc/ioports中展示IO端口的分配情况
+2.访问
+	IO端口的访问可以分为8bit，16bit，32bit
+	unsigned inb(unsigend port) 读字节端口(8bit宽)
+	void outb(unsigend char byte,unsigend port) 写字节端口(8bit宽)
+
+	unsigned inw(unsigend port) 读字节端口(16bit宽)
+	void outw(unsigend char byte,unsigend port) 写字节端口(16bit宽)
+
+	unsigned inl(unsigend port) 读字节端口(32bit宽)
+	void outl(unsigend char byte,unsigend port) 写字节端口(32bit宽)
+3.释放
+	void release_region(unsigned long start,unsigend long n)
+	
+IO内存的操作
+1.申请
+	struct resource *request_mem_region(unsigned long start,unsigned long len,char *name)
+	申请一个从start开始长度为len字节的内存区。如果成功返回非空负责返回NULL
+	/proc/iomem中列出已经使用的IO内存
+2.映射
+	在访问IO内存前必须进行物理地址到虚拟地址的访问
+	void *ioremap(unsigend long phys_addr, unsigne long size)
+3.访问
+	unsigend ioread8(void *addr)
+	unsigend ioread16(void *addr)
+	unsigend ioread32(void *addr)
+	void iowrite8(u8 value,void *addr)
+	void iowrite16(u8 value,void *addr)
+	void iowrite32(u8 value,void *addr)
+4.释放
+	void iounmap(void* addr) 解除映射
+	void release_mem_region(unsigend long start, unsigend long len) 释放IO内存
+

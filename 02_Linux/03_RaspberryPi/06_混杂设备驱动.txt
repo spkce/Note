@@ -1,0 +1,25 @@
+混杂设备首先是一个字符设备，混杂设备的主设备号都是10
+
+在linux内核中混杂设备使用struct miscdevive来描述的
+
+struct miscdevice{
+	int minor;
+	const char *name;
+	const struct file_operations* fops;
+	struct list_head list;
+	struct device *parent;
+	struct device *this_device;
+}
+该结构体后三个成员一般由内核维护
+
+注册
+int misc_register(struct miscdevice * misc)
+
+设备资源
+struct resource{
+	resource_size_t start;	//资源的起始物理地址
+	resource_size_t end;	//资源的结束地址
+	const char* name;		//资源名称
+	unsigned long flags;	//资源类型
+	struct resource *parent,*sibling,child;
+}

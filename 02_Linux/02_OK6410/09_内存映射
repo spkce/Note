@@ -77,3 +77,56 @@ image：	被映射的文件名称
 <mmap设备操作>
 映射一个设备意味着将用户空间的一段内存与设备内存关联起来。访问映射内存就是访问设备
 mmap是将设备内存线性地址映射到用户地址空间
+内存映射函数mmap，负责把文件内容映射到进程的虚拟内存空间，通过对这一段内存的读取和修改，来实现对文件的读取和修改而不需要再调用read，write等操作
+
+void* mmap(void* addr, size_t len, int prot,int flags,int fd,off_t offset)
+
+addr:指定映射的起始地址，通常设为NULL，由系统指定
+len：映射内存空间的长度
+prot：映射区的保护方式
+	PORT_EXEC:映射区可以被执行
+	PORT_READ:映射区可以被读取
+	PROT_WRITE:映射区可以被写入
+flags：映射区的特性
+	MAP_SHARED:写入映射区的数据复制回文件，且允许其他映射该文件的进程共享
+	MAP_PRIVATE：对映射区的写入操作会产生一个映射区的复制(copy-on-write)，对此区域所有的修改不会写回原文件
+fd：映射的文件
+offse：文件的偏移
+
+解除映射
+int munmap(void *start,size_t length)
+start为所指向映射内存，参数length表示欲取消的内存大小
+返回0表示成功，否则返回-1，错误原因存于errno中
+
+<mmap设备实现>
+
+mmap设备的方法就是file_oprations结构的成员，在mmap系统调用发出时被调用。在此之前，内核已经完成了很多工作。
+mmap设备需要做的就是建立虚拟地址到物理地址的页表，方法有2.
+1.使用remap_pfn_range一次建立所有页表；
+2.使用nopage VMA方法每次建立一个页表；
+
+方法1中的函数
+int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,unsigned long pfn,unsigned long size,pgprot_t prot);
+vma：虚拟内存的区域指针
+addr：虚拟地址的起始值
+pfn：要映射物理地址所在的物理页帧号，可将物理地址>>PAGE_SHIFT得到
+size：要映射区域的大小
+prot：VMA的保护属性
+
+实例
+int memdev_mmap(struct file *filp, struct vm_area_struct *vma)
+{
+	vma->vm_flags |= VM_IO;
+	vma->vm_flags |=VM_RESERVED;
+	
+	if(remap_pfn_range(vma,
+		vma->vm_start,
+		virt_to_phys(dev->data)>>PAGE_SHIFT,
+		size,
+		vma->vm_page_port))
+	{
+		return -EAGAIN;
+	}
+	
+	return 0;
+}
