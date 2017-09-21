@@ -1,0 +1,4 @@
+.config文件的提取
+在终端下执行 sudo modprobe configs
+/proc/下就有config.gz的文件
+zcat config.gz > ..../.config 将当前config使用的文件放到内核目录下

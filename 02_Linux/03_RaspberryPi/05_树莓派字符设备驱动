@@ -1,0 +1,35 @@
+CPU相关
+树莓派官方和内核开发者对CPU的称呼有两种：
+1.BCM2708/BCM2709
+2.BCM2835/BCM2836
+内核开发者喜欢BCM2708/BCM2709的称呼，这个称呼是指处理器的系列。在linux内核与Arch下与体系结构相关的代码是以BCM2708/BCM2709区分的。
+在内核驱动开发中主要也是用这一个称呼
+树莓派官方使用BCM2835/BCM2836称呼，这个称呼是指处理的具体型号。
+
+树莓派3B的处理器系列是BCM2709，型号是BCM2837
+
+
+使用cat /proc/cpuinfo命令可以查看当前CPU的信息。
+例如：树莓派3B运行 cat /porc/cpuinfo命令可以看到
+......
+Hardware        : BCM2709
+......
+
+获取io内存地址（x86系列分为IO空间和内存空间，ARM是没有这么区分的）
+cat /proc/iomem
+
+00000000-36ffffff : System RAM
+00008000-00775d0b : Kernel code
+007de000-0092378b : Kernel data
+3f006000-3f006fff : dwc_otg
+3f007000-3f007eff : /soc/dma@7e007000
+3f00b840-3f00b84e : /soc/vchiq
+3f00b880-3f00b8bf : /soc/mailbox@7e00b800
+3f200000-3f2000b3 : /soc/gpio@7e200000
+3f201000-3f201fff : /soc/uart@7e201000
+3f201000-3f201fff : uart-pl011
+3f204000-3f204fff : /soc/spi@7e204000
+3f300000-3f3000ff : /soc/mmc@7e300000
+3f980000-3f98ffff : dwc_otg
+
+由此可以看出树莓派3b(BCM2709)的GPIO的起始物理地址是0x3f200000。Linux系统的MMU将该物理地址映射到虚拟地址上

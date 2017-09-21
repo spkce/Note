@@ -1,0 +1,85 @@
+调试技术:
+	1.打印调试
+	2.调试器调试
+	3.查询调试
+
+代码中定义：
+#ifdef PDEDUG
+#define PLOG(fmt,args...) printk(KERN_DEBUG"scull:"fmt,##args)
+#else
+#define PLOG(fmt,args...)
+#endif
+
+Makefile作如下修改
+DEBUG=y
+ifeq($(DEBUG),y)
+DEBFLAGS = -O2 -g -D PDEBUG #-D 相当于代码中的define
+else
+DEBFLAHS = -O2
+endif
+CFLAGS += $(debflags)
+
+以上就是debug代码
+
+竞争
+例如，多个进程使用下面代码读取数据，便会竞争
+if(copy_from_user(&(dev->data[pos]),buf,count))
+	ret = -EFAULT;
+	goto out
+
+Linux(内核)中主要有semaphore机制(信号量)和spin_lock(自旋锁)机制防止竞争
+
+semaphore机制(信号量)，是一中睡眠锁，如果有一个任务想要获取一个已被占用的信号量时，信号量会将这个进程放入一个等待队列，然后让其睡眠。当占有信号量的任务释放信号量后，处于等待队列中的任务被唤醒，并获得信号量。
+
+信号量的实现定义在<asm/semaphore.h>中，struct semaphore类型来表示信号量。
+使用步骤：
+1.定义:
+	struct semaphore sem;
+2.初始化:
+	void sema_init(struct semaphore *sem,int val)
+	该函数初始化信号量的初值，设置信号量sem的值为val.（值只能为1 or 0）
+	void init_MUTEX(structsemaphore ×sem)
+	该函数初始化一个互斥锁，把sem值设为1
+	void init_MUTEX_LOCKED(structsemaphore ×sem)
+	该函数初始化一个互斥锁，把sem值设为0
+
+	定义初始化的工作可由如下宏一步完成:
+	DECLARE_MUTEX(name)        //定义一个信号量name，并初始化它的值为1
+	DECLARE_MUTEX_LOCKED(name) //定义一个信号量name，并初始化它的值为0，即创建时便已经处在已锁状态
+
+3.获取信号量
+	void down(struct semaphore *sem)
+	获取信号sem，可能会导致进程的睡眠(TASK_UNINTERRUPTIBLE)，因此不能在中断中使用。该函数把sem的值减1.如果信号量sem的值非负，就直接返回，否则调用者讲被挂起，直到别的任务释放该型信号量才能继续进行
+
+	int down_interruptible(struct semaphore *sem)
+	获取信号量sem。如果信号量不可用，进程将被置为TASK_INTERRUPTIBLE类型的睡眠状态。该函数返回值来区分是否正常返回还是被信号中断返回，如果返回0，表示或的的信号量正常返回，如果被信号打断，返回-EINTR
+	//TASK_INTERRUPTIBLE睡眠是可以被唤醒的
+	//TASK_UNINTERRUPTIBLE是不可以被唤醒的
+
+	down_killable(struct semphore *sem)
+	获取信号量sem。如果信号不可用，进程将被置为TASK_KILLABLE类型睡眠状态
+	
+	注：down()不建议使用
+
+4.释放信号量
+void up(struct semaphore* sem)
+该函数释放信号量sem，即把sem值加1，如果sem值为非正数。表面有任务等待该信号量，因此唤醒这些等待者
+
+自旋锁
+自旋锁最多只能被一个可执行单元持有。不会引起调用者睡眠，如果一个执行线程试图获得一个已被持有的自旋锁，那么线程就会一直进行忙循环，一直等待其他人释放。这个动作也是“自旋”的字面意思
+
+1.初始化: 
+	spin_lock_init(x)
+2.获取锁:
+	spin_lock(lock)
+	若不能获取则一直在次循环，直到别人释放
+	spin_trylock(lock)
+	若能获取返回真，不能获取则返回假。不循环
+3.释放锁
+	spin_unlock(lock)
+
+
+信号量和自旋锁的区别：
+	信号量可以有多个持有者	，自旋锁只能有一个。当然也用信号量叫互斥信号量（只能一个持有者）和计数信号量（多个持有者）
+	信号量适合保持时间较长的情况，自旋锁反之。
+	

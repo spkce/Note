@@ -1,0 +1,31 @@
+等待队列可以看做使保存进程的容器
+
+等待队列的操作
+1.定义等待队列
+	wait_queue_head_t my_queue
+2.初始化等待队列
+	init_waitqueue_head(&my_queue) 
+
+或者可以同时定义并初始化
+	DECLARE_WAIT_QUEUE_HEAD(my_queue)
+
+
+有条件的睡眠:
+1.wait_event(queue,condition) 
+当condition为真，立即返回。否则让进程进入TASK_UNINTERRUPTIBLES睡眠，并挂载到queue所指向的等待队列上
+2.wait_event_interruptible(queue,condition)
+当condition为真，立即返回。否则让进程进入TASK_INTERRUPTIBLES睡眠，并挂载到queue所指向的等待队列上
+3.int wait_event_killable(wait_queue_t queue,condition)
+当condition为真，立即返回。否则让进程进入TASK_KILLABLE睡眠，并挂载到queue所指向的等待队列上
+
+无条件睡眠:
+1.sleep_on(wait_queue_head_t *q)
+让进程进入不可中断睡眠，并将它放入等待队列
+2.interruptible_sleep_on(wait_queue_head_t *q)
+让进程进入可中断睡眠，并将它放入等待队列
+
+从等待队列唤醒：
+1.wake_up(wait_queue_head_t *q)
+从q里面唤醒TASK_UNINTERRUPTIBLES、TASK_INTERRUPTIBLES、TASK_KILLABLE所用进程
+2.wake_up_interruptible(wait_queue_head_t *q)
+从q里面唤醒TASK_INTERRUPTIBLES的进程

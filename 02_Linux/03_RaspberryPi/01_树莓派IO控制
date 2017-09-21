@@ -1,0 +1,47 @@
+树莓派3的GPIO控制。
+目前网上控制树莓派3的方法共有3种：Python GPIO、wiringPi和 BCM2835 C Library
+不知道为什么使用BCM2835 C Library控制GPIO时，IO口并没有相应的输出电平。在网上搜索也没有找到相应的解决方法。
+而Python GPIO主要是给python使用的。这里主要介绍wiringPi的用法
+
+WiringPi的安装：
+  执行
+	git clone git://git.drogon.net/wiringPi
+  下载wiringPi，然后进入 wiringPi的根目录执行
+	./bulid
+   完成后WiringPi就完成了安装。在完成安装后，在终端执行 
+	gpio readall
+   就会打印出树莓派的引脚图。
+
+LED控制：
+  wiringPi控制有三个步骤：1初始化wiringPi 。2设置GPIO模式。3设置电平。
+  以LED下为控制的简单例子：
+	#include <wiringPi.h>
+	int main(void)
+	{
+ 	 	wiringPiSetup() ;
+ 	 	pinMode (0, OUTPUT) ;
+ 	 	for(;;) 
+ 	 	{
+  	 		digitalWrite(0, HIGH) ; delay (500) ;
+   	 		digitalWrite(0,  LOW) ; delay (500) ;
+ 	 	}
+	}
+  编译命令：
+	gcc led.c -lwiringPi  
+
+树莓派的GPIO有四个初始化的函数。
+	int wiringPiSetup(void);
+	int wiringPiSetupGpio(void);
+	int wiringPiSetupPhys(void);
+	int wiringPiSetupSys(void);
+这里使用wiringPiSetup()函数。
+
+pinMode函数的作用是配置GPIO的模式，它共可以设置四种模式：
+INPUT	输入
+OUTPUT	输出
+PWM_OUTPUT	脉冲输出
+GPIO_CLOCK	GPIO时钟
+仅有管脚1支持PWM_OUTPUT模式,仅有管脚 7支持CLOCK输出模式。
+
+void digitalWrite(int pin, int value)函数输出数字电平。其中它的value为0的话输出低电平，value为非零的话输出高电平
+

@@ -1,0 +1,69 @@
+在用户空间，使用ioctl调用来控制设备
+	原型: int ioctl(int fd, unsigned long cmd,...)
+	可选参数，是否存在依赖于控制命令
+	//2.6.36后就没有struct file_operation中就没有ioctl了，取而代之的使unlocked_ioctl
+	log(*unlocked_ioctl)(struct file *filp, unsigend int cmd, unsigned long arg)
+
+loctl实现:
+1.定义
+为了防止对错误设备使用正确命令，命令号应该在设备中是唯一的
+	loctl命令编码被划分为几个位段，include/asm/ioctl.h中定义:
+		类型（幻数）、序号、传送方向、参数大小
+	Documentation/ioctl-number.txt中罗列了在内核中已经使用的幻数
+	(4.4.0内核代码在Documentation/ioctl/ioctl-number.txt）
+定义ioctl命令的正确方法是使用4个位段，这个列表介绍的符号定义在<linux/ioctl.h>中：
+	Type:幻数，表明哪个设备的命令，在参考ioctl-number.txt后选出，8位宽
+	Number:序号，表明设备命令中的第几个，8位宽
+	Direction:数据传送方向，可能值是_IOC_NONE,_IOC_READ,_IOC_WRITE。方向使出应用程序来看的，比如READ是从设备中读取
+	Size:用户数据大小。13/14位宽，视处理器而定
+命令的结构
+|	Type	|	Number	|	Direction	|	Size		|
+|-----------|-----------|---------------|---------------|
+|	8bit	|	8bit	|		2bit	|	13~14bit	|
+|-----------|-----------|---------------|---------------|
+内核中提供下列的宏来帮助定义命令：
+	_IO(type,nr)没有参数的命令
+	_IOR(type,nr,datatype) 从驱动读取数据
+	_IOW(type,nr,datatype)	写数据到驱动
+	_IOWR(type,nr,datatype) 双向，type和nr做为参数被传送
+	eg:
+		#define MEM_IOC_MAGIC 'm' //定义幻数
+		#define MEM_IOCSET _IOW(MEM_IOC_MAGIC,0,int)
+		#define MEM_IOCGQSET _IOR(MEM_IOC_MAGIC,1,int)
+
+unlock_ioctl实现：
+	unlock_ioctl通常是根据命令执行switch语句，当命令号不能匹配任何一个设备所支持的命令时，通常返回-EINVAL(“非法参数”)
+	unlock_ioctl中的参数arg可以是一个整数也可以使指针。如果是整数可以直接使用，如果使指针，在使用之前必须确保用户地址是有效的，因此必须进行检查。
+	如果指针由下面函数使用则不需要检测:
+		copy_from_user
+		copy_to_user
+		get_user
+		put_user
+	需要检测的：
+		__get_user
+		__put_user
+	使用:
+		int access_ok(int type,const void *addr,unsigned long size)
+	第一个参数是VERIFY_READ或VERIFY_WRITE用来表明是读用户内存还是写用户内存。addr参数是待检查的用户空间地址，size是长度。access_ok的返回值:1成功，0失败。如果返回失败则ioctl需要返回-EFAULT
+	eg:
+	if(_IOC_DIR(cmd)&_IOC_READ) //命令的方向
+	{
+		err = !access_ok(VERIFY_WRITE,(void __user*)arg),_IOC_SIZE(cmd));
+
+	}else if(_IOC_DIR(cmd)&_IOC_WRITE)
+	{
+		err = !access_ok(VERIFY_READ,(void __user *)arg, _IOC_SIZE(cmd));
+	}
+
+	if(err) return -EFAULT;
+	注意:_IOC_READ对应VERIFY_WRITE，把数据从内核空间读到用户空间需要检测用户空间地址能否写入
+
+常见错误：
+1.编译时出现：CONFIG_X86_X32 enabled but no binutils support错误，可能是路径中出现空格或缺少binutils
+
+2.应用程序编译时如果报下面的错误：
+	expected expression before ‘int’ #define MEMDEV_IOCGETDATA _IOR(MEMDEV_IOC_MAGIC,2,int)
+
+ 则需要加#include <linux/ioctl.h>
+
+

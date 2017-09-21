@@ -1,0 +1,28 @@
+	运行命令：
+		apt-cache search linux-source
+	可以查看可以下载的linux源码包
+
+	运行结果：
+	linux-source - Linux kernel source with Ubuntu patches
+	linux-source-4.4.0 - Linux kernel source for version 4.4.0 with Ubuntu patches
+	linux-source-4.8.0 - Linux kernel source for version 4.8.0 with Ubuntu patches
+	
+	如上面所示，可以下载的源码包有：linux-source-4.4.0和Linux-source-4.8.0
+	选择4.8.0版本的源码包
+		apt-get install linux-source-4.8.0
+	完成后在 /usr/src 目录下就会有linux-source-4.8.0.tar.bz2这样一个压缩包，这就是下载的源码包
+	在root权限下运行
+		tar jxvf linux-source-2.6.32.tar.bz2
+	完成解压。在完成解压后进入解压出的文件夹linux-source-4.8.0，进行内核的配置。这里使用原来的配置
+		make oldconfig
+	同样的命令还有make config、make menuconfig。它们都使为了在linux-source-4.8.0文件夹下生成.config。编译内核时依据.config进行编译。
+	完成配置之后，运行
+		make bzImage
+	生成vmlinux.o。vmlinux是可引导的、压缩的内核。“vm”代表的是“virtual memory”
+	在编译内核时如果出现错误：fatal error: openssl/opensslv.h: 没有那个文件或目录的话可以直接下载libssl-dev
+		apt-get install libssl-dev
+	然后是编译模块
+		make modules
+	完成模块的编译后，进行模块的安装
+		make modules_install
+	当以上步骤完成后就可以在/lib/modules下看见一个名字以generic结尾的文件夹。例如linux-4.8.0-56-generic。到此为止便完成了内核树的构造。

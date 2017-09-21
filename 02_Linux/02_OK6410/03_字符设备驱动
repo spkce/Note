@@ -1,0 +1,168 @@
+驱动程序: 使硬件工作的程序
+
+Linux驱动程序主要是为了解决 软件的复用、接口统一
+
+Liunx下驱动分类(之一)
+字符设备驱动:以字节为最小访问单位
+网络接口驱动:发送和接受报文
+块设备驱动: 一次传送一个或多个块(512字节)的设备，当然Liunx无次限制
+
+Linux驱动安装
+1.模块安装
+2.直接编译进内核
+	1.kconfig
+	2.Makefile
+	如果在Liunx源码下的drivers下的char文件夹里面加一个hello.c
+
+	在kconfig里面添加:     （为了在menuconfig命令后出现的配置界面中出现相应的选项） 
+	config HELLO
+		bool "hello driver" #bool表示两种选项，"hello driver"为enuconfig命令后出现的配置界面中名字
+	
+	在Makefile中追加
+	obj-$(CONFIG_HELLO)    += hello.o #CONFIG_HELLO 由kconfig中的 config HELLO决定
+
+
+Linux用户程序通过设备文件（设备节点）来使用驱动程序。
+设备节点在/dev目录下面
+
+
+
+设备号：
+在/dev目录下执行ls -l就会出现
+......
+crw--w----  1 root tty       4,   0 5月  24 22:45 tty0
+......
+开头的c表示使字符设备 4表示主设备号 0表示次设备号
+每一个字符设备文件对应一个主设备号，每一个字符设备驱动对应一个主设备号。所有主设备号的作用是连接设备文件和设备驱动
+主设备号反应设备类型
+次设备号用来变别那个设备
+
+设备号在内核中使用dev_t实质unsigned int 32整数来定义，其中高12位为主设备号，低20为为次设备号。MAJOR(dev_t dev)获取主设备号 MINOR(dev_t dev)获取次设备号
+
+Linux的设备号的申请
+静态申请: 
+	1.根据Linux源码中Documentation/devices.txt 确定一个没有使用的主设备号
+	2.使用register_chrdev_region()函数注册设备号
+函数:int register_chrdev_region(dev_t from,unsigned count const char *name)
+功能:申请使用从from开始的count个设备号(主设备号不变，次设备号增加)
+参数:from 希望申请使用的设备号，count设备号数目，name设备名(体现在/proc/devices)
+
+动态申请:
+	使用alloc_chrdev_region分配设备号，但是无法在驱动安装前创建设备文件
+函数: int alloc_chrdev_region(dev_t *dev,unsigned baseminor,unsigned count const char *name)
+功能:请求内核动态分配count个设备号，且次设备号从baseminor开始
+参数:dev 分配到的设备号，baseminor起始次设备号，count设备号数目，name设备名
+
+
+Linux的设备号的释放
+设备号在不用的时候一定要释放掉
+void unregister_chrdev_region(dev_t from,unsigned count)
+
+
+
+
+设备文件创建 
+使用cat /proc/devices 可以查看已经加载的设备模块的设备号
+1.使用mknod命令手工创建 (必须在/dev 目录下面)
+	mknod filename type major minor
+ 	可以不在 /dev 目录下面 mknod /dev/filename type major minor
+filename:设备文件名
+type:设备文件类型
+major:主设备号 
+minor:次设备号
+	eg: mknod seria10 c 100 0
+若设备驱动动动态申请，这不太好手动添加
+
+2.自动创建
+//2.6.13之前
+devfs_register(devfs_handle dir,const char *name,unsigned int flags,unsigned int major,unsigned int minor,umode_t mode,void *ops,void *info)
+
+在指定目录下创建设备文件
+
+dir:目录名，为空表示在/dev/目录下创建
+name:文件名
+flags：创建标志
+major：主设备号
+minor：次设备号
+mode：创建模式
+ops：操作函数集
+info：通常为空
+
+//2.6.13后
+udev（mdev） //这是存在与应用程序层
+eg:
+	struct class *myclass = class_create(THIS_MODULE,"my_device_driver")
+	
+	device_create(myclass,NULL,MKDEV(major_num,0),NULL,"my_device")
+
+	当驱动模块被加载时，udev(mdev)就会自动在/dev下创建my_device设备文件
+
+
+
+3个主要的结构体
+Struct file     
+Struct inode
+Struct file_operations
+
+Struct file 代表打开的文件，每打开一次创建一次，关闭释放。
+重要参数：
+	loff_t f_pos //文件读写的位置，本质上是个unsigned int
+	struct file_operations *f_op
+
+Struct file_operations：
+
+struct file_operations mem_fops={
+	.owner = THIS_MODULE,
+	.llseek = mem_seek,
+	.read = mem_read,
+	.write = mem_write,
+	.ioctl = mem_ioctl,
+	.open = mem_open,
+	.release = mem_release,
+}
+	除了.owner其他都是函数指针。.owner是引用计数。使用变量时，在内核就会把owner加1，释放后减1 。只用在.owner为0时，设备才可以被卸载。
+	.open:在设备文件上的第一个操作,并不要求一定实现，可以在struct file_operations中直接定义为NULL，这样就一直打开成功
+	int (*open) (struct inode *, struct file *);
+	
+	.read
+	ssize_t (*read) (struct file *, char __user *, size_t, loff_t *);
+	
+	注意!!!：read和write的指正用户空间指针，不能被内核代码直接引用
+	内核提供用于访问用户空间的指针的函数；
+	int copy_from_user(void * to, const void __user * from, unsigned long n)
+		//从用户空间拷贝数据到内核空间
+	int copy_to_user(void __user *to, const void *from, unsigned long n)
+		//从内核空间拷贝数据到用户空间
+
+Struct inode 记录文件物理上的信息，它只会有一个。不会像Struct file那样有多个
+重要成员 dev_t i_rdev:设备号
+
+
+字符设备注册：
+字符设备使用struct cdev来描述，字符设备的注册可以分为如下3个步骤：
+	1.分配cdev
+	2.初始化cdev
+	3.添加cdev
+
+字符设备的注销
+int cdev_del(struct cdev *p)
+
+注意：
+动态加载的驱动在重启后就没有了，想要一直在内核中有两个办法
+1.编译进内核
+2.在文件/etc/rc.local中加载你想要的模块程序即可
+比如我想再系统启动的时候自动给我完成：卸载r8169驱动、然后安装r8168驱动、同时重启网络服务器的工作，那么我在该文件中的exit 0 之前写如下的语句：
+rmmod r8169#（卸载相应的驱动）
+insmod /usr/src/r8168.ko#(这个是r8168.ko文件放的绝对路径)，这步是安装相应的驱动
+ifconfig eth0 down
+ifconfig eth0 up
+
+然后保存，重新启动reboot之后，系统就将自动完成我们想要的那几步工作。
+
+
+常见错误
+1.insmod mem.ko时，若出现 
+insmod: ERROR: could not insert module mem.ko: Device or resource busy 
+可能是设备号已经被使用了。换一个吧
+2.cat /proc/devices 如果出现一个模块的名字是我们要加载的模块的名字但是/dev和ismod都没有这个模块可能会导致错误，应用程序打不开加载后的模块。把模块和设备文件卸载后重启也许可以解决
+

@@ -1,0 +1,127 @@
+
+内核模块有如下特点：
+	1.模块本身不编译进内核文件
+	2.可根据需要，动态的加载和卸载
+
+在内核模块中 使用printk代替printf且没有main函数
+	1.模块加载函数 -- 必需
+		module_init宏所指定的函数
+	2.模块卸载函数
+		module_exit宏所指定的函数
+
+内核模块的编译一般使用Makefile
+1.内核模块由一个源文件构成
+hello.c
+#include <linux/init.h>
+#include <linux/module.h>
+
+static int hello_init(void)
+{
+	printk(KERN_ALERT"Hello World!\n");
+	return 0;
+}
+
+static void hello_exit(void)
+{
+	printk(KERN_INFO"Exit");
+}
+
+module_init(hello_init);
+module_exit(hello_exit);
+
+Makefile：
+
+ifneq ($(KERNELRELEASE),)
+
+obj-m := hello.o
+
+else
+
+KDIR := /lib/modules/$(shell uname -r)/build
+
+all:
+	make -C $(KDIR) M=$(shell pwd) modules
+clean:
+	rm -f *.ko *.o *.mod.o *mod.c *.symvers *.order
+
+endif
+
+M=$(shell pwd)  表示源文件在当前目录下面
+modules 表示编译的目标为内核模块
+obj-m 表示编译出的内核模块的名字
+
+编译完成后在当前目录下会有hello.ko的文件，使用insmod hello.ko就可以加载mod
+printk的输出是否在屏幕看见（可能）由KERN_**的宏决定，dmesg -c可以看见一个履历
+
+2.内核模块由多个源文件组成
+
+ifneq ($(KERNELRELEASE),)
+
+obj-m := hello.o           #line1
+hello-objs :=main.o add.o  #line2 
+
+else
+
+KDIR := /lib/modules/$(shell uname -r)/build
+
+all:
+	make -C $(KDIR) M=$(shell pwd) modules
+clean:
+	rm -f *.ko *.o *.mod.o *mod.c *.symvers *.order
+
+endif
+line1中的hello.o的"hello"需要和下面 hello-objs 的"hello"一致
+
+
+内核的安装与卸载
+加载 insmod
+卸载 rmmod
+查看 lsmod
+加载 modprobe
+
+modprobe和insmod的不同使在于它会根据文件/lib/modules/<$version>/modules.dep来查看要加载的模块，看是否有依赖与其他模块的，如果是，会加载其他模块到内核
+
+
+许可声明
+在内核的源文件中
+MODULE_LINCENSE()指定内核遵守的协议
+	eg: 
+		MODULE_LINCENSE("GPL")  //遵循GPL协议  GNU General Public License
+	网上说没有GPL内核会抱怨？
+
+作者声明 可选
+MODULE_AUTHOR()
+
+模块描述 可选
+MODULE_DESCRIPTION()
+
+模块版本 可选
+MODULE_VERSION()
+
+模块别名 可选
+MODULE_ALIAS()
+
+模块参数
+module_param(name,type,perm) #注意使小写
+name是参数名称，
+type是参数类型， 常见值 bool、int、charp（字符串型）
+perm是参数的访问权限， 常见值 S_IRUGO任何用户都对/sys/module中出现的参数有读权限、	S_IWUSR允许root用户修改/sys/module中出现的该参数
+
+eg：
+	int a = 3；
+	char *st;        //最好有个初始值，如何过不给模块传值，则用默认值
+	module_param(a,int,S_IRUGO)
+	module_param(st,charp,S_IRUGO)
+
+内核符号导出
+/proc/kallsyms记录了内核中所有的导出符号和地址
+
+EXPORT_SYMBOL()将内核符号导出
+内核符号的导出有点像.h函数的声明。A模块中实现的方法，要在B模块中调用就需要这个导出
+
+常见问题：
+内核模块的版本由内核代码决定，版本必须一致。否则加载的时候会报错
+uname -r 可以看见当前正在运行的内核版本
+
+在内核编译时写的Makefile可能需要写为Makefile，不能是makefile
+

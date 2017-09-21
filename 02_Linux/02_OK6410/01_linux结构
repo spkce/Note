@@ -1,0 +1,40 @@
+linux 系统可以分为2个部分：
+	用户空间： 用户程序、C 库
+	内核空间： 系统调用接口、 内核、 体系结构代码(与硬件有关)
+
+ARM中7种工作模式：
+	用户模式(usr)
+	快速中断(fiq)
+	外部中断(irq)
+	管理模式(svc)
+	数据访问终止(abt)
+	系统模式(sys)
+	未定义指令异常(und)
+
+linux 内核架构
+	System Call Interface(SCI)
+	Process Management(PM)
+	Virtual File System(VFS)
+	Memory Management(MM)
+	Network Stack
+	Arch
+	Device Drivers(DD)
+
+	与硬件相关的代码一般就是Arch
+
+linux代码目录结构
+arch目录: 体系结构相关的代码
+block目录: 部分块设备驱动程序
+crypto目录: 加密、压缩CRC校验算法
+documentation目录：内核文档
+drivers目录：设备驱动程序
+lib目录: 库文件代码
+mm目录：内存管理(与体系结构无关的部分)
+net目录：与网络有关的
+samples目录:一些内核编程的范例
+scripts目录：配置内核的脚本
+security目录：SElinux的模块
+sound目录：音频设备的驱动
+usr目录：cpio命令实现
+virt目录：内核虚拟机
+

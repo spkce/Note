@@ -1,0 +1,48 @@
+搭建平台：ubuntu 16
+
+树莓派内核源码
+git clone git://github.com/raspberrypi/linux.git
+git branch -a 可以列出本地和远程分支
+如果要下载rpi-4.1.y
+
+git checkout -b rpi-4.1.y origin/rpi-4.1.y
+
+树莓派编译工具链下载
+git clone git://github.com/raspberrypi/tools.git
+下载完成后，tools下面的arm-bcm2708文件夹中会有：
+arm-bcm2708hardfp-linux-gnueabi
+arm-bcm2708-linux-gnueabi
+arm-rpi-4.9.3-linux-gnueabihf
+gcc-linaro-arm-linux-gnueabihf-raspbian
+gcc-linaro-arm-linux-gnueabihf-raspbian-x64
+
+其中arm-rpi-4.9.3-linux-gnueabihf和gcc-linaro-arm-linux-gnueabihf-raspbian-x64是64位机器用的。(不知道这两货有什么差别)
+
+每一个交叉编译工具的目录下都有bin目录进入，执行./arm-linux-gnueabihf-gcc -v可查看gcc版本。
+
+由于ubuntu16是64位的系统，因此这里使用gcc-linaro-arm-linux-gnueabihf-raspbian-x64
+
+把编译链工具(arm-bcm2708文件夹)安装到 /opt 文件夹下面
+cd tools
+cp -r arm-bcm2708 /opt
+
+然后便是添加环境变量，当然也可以不添加环境变量。只不过不添加环境变量的话需要在编译的时候指明编译器的位置
+
+编译的时候，在make后面加上指定架构的参数。(树莓派是arm架构)
+ARCH=arm
+
+编译的时候，在make后面加上用于指定交叉编译器的参数。
+CROSS_COMPILE=gcc-linaro-arm-linux-gnueabihf-raspbian-
+如果未添加环境变量的话
+CROSS_COMPILE=/opt/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/arm-linux-gnueabihf- 
+
+在开始便宜之前，需要先配置config文件，一般来说其他的linux会使用make menuconfig等命令来进行配置。经实践如果树莓派也是如此的话编译绝对会出错的
+树莓派使用make bcm2709_defconfig
+如果带上必须的参数：
+make ARCH=arm CROSS_COMPILE=/opt/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/arm-linux-gnueabihf- bcm2709_defconfig
+
+然后编译
+make ARCH=arm CROSS_COMPILE=/opt/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/arm-linux-gnueabihf- -j4
+ 
+ 
+当然，在树莓派上gcc已经安装为树莓派的gcc了，不需要在指定gcc的路径了，包括ARCH
