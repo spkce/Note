@@ -1,6 +1,15 @@
 
 #BSC(Broadcom Serial Controller:博通串行控制器)</br>
 ----
+<font color=#fff0000 size=3>*本文中的关于树莓派的寄存器来自于BCM2835的datasheet，树莓派3B的控制器并不是BCM2835*</font>
+
+芯片中共有3个BSC控制器，其中BSC2主要使用于HDMI接口，不推荐其他使用</br>
+它们的起始地址是: </br>
+
+* BSC0: 0x7E205000
+* BSC1: 0x7E804000
+* BSC2: 0x7E805000
+
 ### IIC Adddress Map
 
 |	Adddress offset	|	Register	|		Description		|	size	|
@@ -37,6 +46,7 @@
 **INTD**传输位中断允许位。0：不允许，1：允许</br>
 **ST**启动一个传输。0：不允许，1：允许。</br>
 **CLEAR**清除位，用于清除FIFO。可以同时设置为开始，并将导致FIFO在传输开始前被清除。传输过程中清除FIFO将导致传输被中止。</br>
+&#8194;&#8194;写入00：无动作。10和01都是清空FIFO(为了和以前的版本兼容)BCM2835 C Library中用10</br>
 **READ**指定传输的类型。</br>
 
 ### S Register
@@ -93,7 +103,7 @@
 |	31-8		|				|			保留				|	-		|	-		|
 |	7-0		|		DATA	|			Data			|	RW		|	0x00	|
 
-**Data**为要传送的数据</br>
+**Data**为要传送的数据,FIFO共有16个byte，也就是说FIFO的长度是8，深度是16</br>
 
 ###DIV Register
 
@@ -167,3 +177,13 @@ IIC的设备地址是7bit的，而IIC总线上一次传输是8bit。在传输设
 5. 发从机的设备地址(读地址)
 6. 读取数据，发送NACK应答，使从机释放SDA线(为了发送结束位)
 7. 发送结束位
+
+
+
+BCM2835的DataSheet中可以看到，BSC0的时钟线为SDA0，数据线为SCL0,共有3组:</br>
+可以用作SDA0的GPIO:GPIO0的复用模式0(ALT0) GPIO28的复用模式0（ALT0）GPIO44复用模式1(ALT1)</br>
+可以用作SCL0的GPIO:GPIO1的复用模式0(ALT0) GPIO29的复用模式0（ALT0）GPIO45复用模式1(ALT1)</br>
+
+<font color=#fff0000 size=4>但是！树莓派3B上没有引出GPIO0和GPIO1</font>
+
+所以选择BSC1的GPIO2(SDA1，ATL1)和GPIO3(SCL1，ATL1)
