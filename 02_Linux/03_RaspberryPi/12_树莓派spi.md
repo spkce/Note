@@ -1,11 +1,11 @@
-#SPI
+# SPI
 <font color=#fff0000 size=3>*本文中的关于树莓派的寄存器来自于BCM2835的datasheet，树莓派3B的控制器并不是BCM2835*</font>
 
 BCM2835只有一个SPI接口(SPI0)，另有2个mini SPI(SPI1和SPI2)
 
 SPI0的物理地址是 0x7E204000
 
-###SPI寄存器
+### SPI寄存器
 
 |	Adddress offset	|	Register	|		Description			   |	size	|
 |:-----------------:|:-------------:|:----------------------------:|:----------:|
@@ -16,7 +16,7 @@ SPI0的物理地址是 0x7E204000
 |		0x10		|		LTOH	|	SPI LOSSI mode TOH 		   |	32		|
 |		0x14		|		DC		|	SPI DMA DREQ Controls	   |	32		|
 
-###CS Register
+### CS Register
 
 |	Bit(s)	|Field Name	|			Description				|	Type	|	Reset	|
 |:---------:|:---------:|:---------------------------------:|:---------:|:---------:|
@@ -51,34 +51,34 @@ SPI0的物理地址是 0x7E204000
 **TA** TA=0时不进行传输。cs线为高（CS,CSPOL决定，假设CSPOL=0）RXR和DONE为0。 </br>
 &#8194;&#8194;&#8194;&#8194;TA=1时，传输活动。cs线会被设置。可以认为TA最主要的功能是设置cs线</br>
 
-###FIFO Register
+### FIFO Register
 
 |	Bit(s)	|Field Name	|		Description			|Type|	Reset	|
 |:---------:|:---------:|:-------------------------:|:--:|:--------:|
 |	31-0	|	DATA	|							| RW |	0X00	|
 
-###CLK Register
+### CLK Register
 
 |	Bit(s)	|Field Name	|		Description			|Type|	Reset	|
 |:---------:|:---------:|:-------------------------:|:--:|:--------:|
 |	31-16	|			|		Reserved 			| -  |	-		|
 |	15-0	|	CDIV	|		Clock Divider		| RW |	0X00	|
 
-###DLEN Register
+### DLEN Register
 
 |	Bit(s)	|Field Name	|		Description			|Type|	Reset	|
 |:---------:|:---------:|:-------------------------:|:--:|:--------:|
 |	31-16	|			|		Reserved 			| -  |	-		|
 |	15-0	|	LEN		|		Data Length			| RW |	0X00	|
 
-###LTOH Register
+### LTOH Register
 
 |	Bit(s)	|Field Name	|		Description			|Type|	Reset	|
 |:---------:|:---------:|:-------------------------:|:--:|:--------:|
 |	31-16	|			|		Reserved 			| -  |	-		|
 |	15-0	|	TOH		|							| RW |	0X01	|
 
-###DC Register
+### DC Register
 
 |	Bit(s)	|Field Name	|		Description			|Type|	Reset	|
 |:---------:|:---------:|:-------------------------:|:--:|:--------:|
