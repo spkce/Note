@@ -91,18 +91,67 @@ int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock);
 //尝试加读锁:函数返回0成功;否则返回错误编号
 int pthread_rwlock_tryrdlock(pthread_rwlock_t *rwlock);
 //加读锁(带超时):函数返回0成功;否则返回错误编号
-int pthread_rwlock_timedrdlock (pthread_rwlock_t *rwlock,
+int pthread_rwlock_timedrdlock(pthread_rwlock_t *rwlock,
 	const struct timespec *abstime);
 //加写锁:函数返回0成功;否则返回错误编号
-int pthread_rwlock_wrlock (pthread_rwlock_t *__rwlock);
+int pthread_rwlock_wrlock(pthread_rwlock_t *__rwlock);
 //尝试写锁:函数返回0成功;否则返回错误编号
-int pthread_rwlock_trywrlock (pthread_rwlock_t *rwlock);
+int pthread_rwlock_trywrlock(pthread_rwlock_t *rwlock);
 //加写锁(带超时):函数返回0成功;否则返回错误编号
-int pthread_rwlock_timedwrlock (pthread_rwlock_t *rwlock,
+int pthread_rwlock_timedwrlock(pthread_rwlock_t *rwlock,
 	const struct timespec *abstime);
 //解锁
-int pthread_rwlock_unlock (pthread_rwlock_t *rwlock);
+int pthread_rwlock_unlock(pthread_rwlock_t *rwlock);
 ```
 
 ### 条件变量
+条件变量给多线程提供一种会和的场所，条件本身由互斥量保护的，线程在改变条件状态之前必须先锁住互斥量，其他线程在获取互斥量之前不会察觉到这种改变。</br>
+条件变量由pthread_cond_t表示。</br>静态条件变量可以用常量PTHREAD_COND_INITIALIZER初始化</br>
+动态条件变量必须在释放内存前调用pthread_cond_destroy
 
+```
+//初始化条件变量:函数返回0成功;否则返回错误编号
+int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr);
+//注销条件变量:函数返回0成功;否则返回错误编号
+int pthread_cond_destroy(pthread_cond_t *__cond);
+```
+attr为NULL时，表示条件变量初始化为默认属性
+
+```
+//等待条件变量为真：函数返回0成功;否则返回错误编号
+int pthread_cond_wait(pthread_cond_t *cond,pthread_mutex_t *mutex)
+//等待条件变量为真(带超时)：函数返回0成功;否则返回错误编号
+int pthread_cond_timedwait(pthread_cond_t *cond,
+	pthread_mutex_t *mutex,const struct timespec *abstime)
+```
+pthread_cond_wait参数中传入的互斥量对条件变量进行保护，在调用时候把<font color=#fff0000 size=3>锁住的互斥量</font>传给函数, 函数会自动把线程放到等待条件的线程列表上，<font color=#fff0000 size=3>对互斥量解锁</font>。pthread_cond_wait返回时<font color=#fff0000 size=3>互斥量再次被锁上</font>
+```
+//通知线程条件变量为真：函数返回0成功;否则返回错误编号
+int pthread_cond_signal(pthread_cond_t *cond);
+//通知线程条件变量为真：函数返回0成功;否则返回错误编号
+int pthread_cond_broadcast(pthread_cond_t *cond)
+```
+pthread_cond_signal函数至少能唤醒一个等待该条件的线程，pthread_cond_broadcast唤醒所有等待该条件的线程</br>
+<font color=#fff0000 size=3>注意，一定要改变条件状态以后再给线程发信号</font>
+
+### 自旋锁
+自旋锁和互斥量类似，互斥量在等待锁时是处于休眠状态的，而自旋锁一直处于忙等待状态。因此较之互斥量在线程上花费较少，而较为耗费CPU资源。适用于锁被持有时间较短的情况。</br>
+*在应用层中自旋锁的用处较少，在底层较多*</br>
+自旋锁用pthread_spinlock_t表示
+```
+//初始化自旋锁:函数返回0成功;否则返回错误编号
+int pthread_spin_init(pthread_spinlock_t *lock, int pshared);
+//注销自旋锁:函数返回0成功;否则返回错误编号
+int pthread_spin_destroy(pthread_spinlock_t *__lock);
+```
+自旋锁只有一种属性，只在支持线程进程共享同步的平台上用得到。pshared表示进程共享属性，表明自旋锁如何获取的，若设置为PTHREAD_PROCESS_SHARED,则自旋锁能被可以访问锁底层内存的线程获取;否则pshared设置为PTHREAD_PROCESS_PRIVATE,自旋锁只能被初始化该锁的线程访问
+```
+//获取自旋锁:函数返回0成功;否则返回错误编号
+int pthread_spin_lock (pthread_spinlock_t *__lock)
+//尝试自旋锁:函数返回0成功;否则返回错误编号
+int pthread_spin_trylock (pthread_spinlock_t *__lock)
+//解锁:函数返回0成功;否则返回错误编号
+int pthread_spin_unlock (pthread_spinlock_t *__lock)
+```
+
+### 屏障
