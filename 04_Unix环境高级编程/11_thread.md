@@ -167,7 +167,7 @@ int pthread_barrier_destroy(pthread_barrier_t *barrier)
 初始化屏障时可以使用count参数指定，在允许所有程序继续允许之前，必须到达屏障的线程数。attr指定线程屏障的属性，若为NULL则默认属性
 ```
 //等待其他线程到达：成功返回0或PTHREAD_BARRIER_SERIAL_THREAD;失败返回错误编号
-int pthread_barrier_wait(pthread_barrier_t *__barrier)
+int pthread_barrier_wait(pthread_barrier_t *barrier)
 ```
 到达pthread_barrier_wait的线程在其他线程没有到达时会进入休眠</br>
 对于一个任意线程，pthread_barrier_wait函数返回PTHREAD_BARRIER_SERIAL_THREAD。剩下的线程看到的返回值是0。这使得一个线程可以作为主线程，它可以工作在其他所有线程已完成的工作结果上
