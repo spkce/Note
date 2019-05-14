@@ -142,16 +142,32 @@ pthread_cond_signal函数至少能唤醒一个等待该条件的线程，pthread
 //初始化自旋锁:函数返回0成功;否则返回错误编号
 int pthread_spin_init(pthread_spinlock_t *lock, int pshared);
 //注销自旋锁:函数返回0成功;否则返回错误编号
-int pthread_spin_destroy(pthread_spinlock_t *__lock);
+int pthread_spin_destroy(pthread_spinlock_t *lock);
 ```
 自旋锁只有一种属性，只在支持线程进程共享同步的平台上用得到。pshared表示进程共享属性，表明自旋锁如何获取的，若设置为PTHREAD_PROCESS_SHARED,则自旋锁能被可以访问锁底层内存的线程获取;否则pshared设置为PTHREAD_PROCESS_PRIVATE,自旋锁只能被初始化该锁的线程访问
 ```
 //获取自旋锁:函数返回0成功;否则返回错误编号
-int pthread_spin_lock (pthread_spinlock_t *__lock)
+int pthread_spin_lock(pthread_spinlock_t *lock)
 //尝试自旋锁:函数返回0成功;否则返回错误编号
-int pthread_spin_trylock (pthread_spinlock_t *__lock)
+int pthread_spin_trylock(pthread_spinlock_t *lock)
 //解锁:函数返回0成功;否则返回错误编号
-int pthread_spin_unlock (pthread_spinlock_t *__lock)
+int pthread_spin_unlock(pthread_spinlock_t *lock)
 ```
 
 ### 屏障
+屏障是用户协调多个线程并行工作的同步机制。屏障允许每个线程等待，直达所有的合作线程都到达某一个点，然后从该点执行。prthread_join()就是一种特殊屏障：允许一个线程等待直到另一个线程退出。</br>
+屏障用pthread_barrier_t表示
+```
+//初始化屏障:函数返回0成功;否则返回错误编号
+int pthread_barrier_init(pthread_barrier_t *barrier,
+	const pthread_barrierattr_t *attr, unsigned int count)
+//注销屏障:函数返回0成功;否则返回错误编号
+int pthread_barrier_destroy(pthread_barrier_t *barrier)
+```
+初始化屏障时可以使用count参数指定，在允许所有程序继续允许之前，必须到达屏障的线程数。attr指定线程屏障的属性，若为NULL则默认属性
+```
+//等待其他线程到达：成功返回0或PTHREAD_BARRIER_SERIAL_THREAD;失败返回错误编号
+int pthread_barrier_wait(pthread_barrier_t *__barrier)
+```
+到达pthread_barrier_wait的线程在其他线程没有到达时会进入休眠</br>
+对于一个任意线程，pthread_barrier_wait函数返回PTHREAD_BARRIER_SERIAL_THREAD。剩下的线程看到的返回值是0。这使得一个线程可以作为主线程，它可以工作在其他所有线程已完成的工作结果上
