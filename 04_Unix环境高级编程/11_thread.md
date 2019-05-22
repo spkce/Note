@@ -113,7 +113,7 @@ int pthread_rwlock_unlock(pthread_rwlock_t *rwlock);
 //初始化条件变量:函数返回0成功;否则返回错误编号
 int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr);
 //注销条件变量:函数返回0成功;否则返回错误编号
-int pthread_cond_destroy(pthread_cond_t *__cond);
+int pthread_cond_destroy(pthread_cond_t *cond);
 ```
 attr为NULL时，表示条件变量初始化为默认属性
 
