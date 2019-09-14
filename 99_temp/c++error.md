@@ -75,10 +75,179 @@ assert(iRet != 0);
 **问题**：PageXXX.cpp关于控件部分的代码是强保证、基本保证还是Bug？</br>
 回答：控件在CPageXXX类的构造函数中创建于堆区，但是相应对应的没有在析构函数中没有删除，存在泄漏问题。在整个Challenge生命周期中页面功能页面基本只创建一次，内存会被操作系统回收，故属于基本保证。
 
-## item 72
+## item 72 优先使用异常报告错误
 
-## item 73
+## item 73 通过值抛出，通过引用捕获
 
+在抛出异常的时候，要避免抛出指针。
+* 抛出指向堆区的指针→需要额外进行动态内存的管理
+* 抛出指向栈区的指针→捕获时栈地址可能无效
+
+若一定要抛出指针，可以考虑智能指针。
+
+不要使用值捕获，否则会有切片问题
+```C++
+#include "stdio.h"
+class IException
+{
+  public:
+	IException() { }
+	~IException() {}
+};
+
+class CException : public IException
+{
+  public:
+	CException() : IException() { m_num = 1; }
+	~CException() {}
+	void Dump() { printf("CException::m_num = %d\n", m_num); }
+	int m_num;
+};
+
+void fun(void)
+{
+	CException e;
+	throw e;
+}
+
+int main(int argc, char const *argv[])
+{
+	try
+	{
+		fun();
+	}
+	catch (IException e)
+	{
+		e.Dump();
+	}
+	return 0;
+}
+```
+```shell
+spice@ubuntu:~/Desktop/hgfs/Source/temp/try_catch$ g++ main.cpp 
+main.cpp: In function ‘int main(int, const char**)’:
+main.cpp:35:5: error: ‘class IException’ has no member named ‘Dump’
+   e.Dump();
+```
+
+重新抛出异常e时，应该只写为throw，而不是throw e, throw e会粗暴地去除异常对象的多态。
+```C++
+#include "stdio.h"
+class IException
+{
+  public:
+	IException() { m_count = 0; }
+	~IException() {}
+	int m_count;
+};
+
+class CException : public IException
+{
+  public:
+	CException() : IException() { m_num = 99; }
+	~CException() {}
+	void Dump() { printf("CException::m_num = %d\n", m_num); }
+
+	int m_num;
+};
+
+void fun1(void)
+{
+	CException e;
+	throw e;
+}
+
+void fun2(void)
+{
+	try
+	{
+		fun1();
+	}
+	catch (IException &e)
+	{
+		e.m_count++;
+		throw e;
+	}
+}
+
+int main(int argc, char const *argv[])
+{
+	try
+	{
+		fun2();
+	}
+	catch (CException &e)
+	{
+		e.m_num++;
+		e.Dump();
+	}
+	return 0;
+}
+```
+运行结果：
+```shell
+spice@ubuntu:~/Desktop/hgfs/Source/temp/try_catch$ ./a.out 
+terminate called after throwing an instance of 'IException'
+Aborted (core dumped)
+```
+```C++
+#include "stdio.h"
+class IException
+{
+  public:
+	IException() { m_count = 0; }
+	~IException() {}
+	int m_count;
+};
+
+class CException : public IException
+{
+  public:
+	CException() : IException() { m_num = 99; }
+	~CException() {}
+	void Dump() { printf("CException::m_num = %d\n", m_num); }
+
+	int m_num;
+};
+
+void fun1(void)
+{
+	CException e;
+	throw e;
+}
+
+void fun2(void)
+{
+	try
+	{
+		fun1();
+	}
+	catch (IException &e)
+	{
+		e.m_count++;
+		throw ; // throw e 修改为 throw
+	}
+}
+
+int main(int argc, char const *argv[])
+{
+	try
+	{
+		fun2();
+	}
+	catch (CException &e)
+	{
+		e.m_num++;
+		e.Dump();
+	}
+	return 0;
+}
+```
+运行结果：
+```shell
+spice@ubuntu:~/Desktop/hgfs/Source/temp/try_catch$ ./a.out 
+CException::m_num = 100
+```
 ## item 74 正确地报告、处理和转换错误
 只要函数检查出一个它自己无法解决而且函数也无法继续执行的错误，就应该报告错误
 ```C++
@@ -132,3 +301,49 @@ int* fun(void)
 }
 
 ```
+
+## item 75 避免使用异常规范
+
+什么是异常规范？
+```C++
+//异常规范伪代码
+int* fun(void) throw(int)//表明只能抛出int型异常
+{
+	......
+}
+int* fun(void) throw()//表明不抛出异常
+{
+	......
+}
+```
+异常规范并不灵活,如果抛出异常规范以外类型的异常对象，程序会被中止。（结果无可挽回的）
+```C++
+void fun(void) throw(int)
+{
+	throw "1";
+}
+
+int main(int argc, char const *argv[])
+{
+	try
+	{
+		fun();
+	}
+	catch (const char* e)
+	{
+		printf("%s",e);
+	}
+	return 0;
+}
+```
+运行结果：
+```shell
+spice@ubuntu:~/Desktop/hgfs/Source/temp/try_catch$ ./a.out 
+terminate called after throwing an instance of 'char const*'
+Aborted (core dumped)
+```
+无法为函数模板编写出有用的异常规范，因为一般无法说清它们所操作的类型可能抛出哪些异常。
+
+异常规范几乎完全无用(出错即终止)的异常规范而付出性能开销
+
+如果基类中使用了异常规范,派生类必须使用相应的异常规范
