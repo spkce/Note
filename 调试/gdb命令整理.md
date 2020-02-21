@@ -1,4 +1,5 @@
 
+<font color=#fff0000 size=3>2月20日</font>
 ## 1. break 变量
 普通断点
 ```
@@ -284,4 +285,69 @@ Num     Type           Disp Enb Address    What
 2       hw watchpoint  keep y              a
 3       acc watchpoint keep y              a
 
+```
+
+<font color=#fff0000 size=3>2月21日</font>
+## 3. attch命令
+查看设备运行信息
+```
+(gdb) info proc
+```
+用以下命令可以attach,在实际的测试中，可能需要注意权限问题
+```
+gdb <program> pid
+```
+```
+gdb <program>
+(gdb) attach pid
+```
+```
+(gdb) detach
+```
+例子：
+
+```C++
+#include <stdio.h>
+#include <pthread.h>
+#include <unistd.h>
+
+int a = 0;
+int b = 10;
+int main(int argc, char* argv[])
+{
+	for (;;)
+	{
+		if (a == 5)
+		{
+			a = b / 2;
+		}
+		a++;
+		sleep(1);	
+
+	}
+}
+```
+```
+(gdb) info proc
+process 4769
+cmdline = './a.out'
+cwd = '/mnt/hgfs/Source/temp/gdb'
+exe = '/mnt/hgfs/Source/temp/gdb/a.out'
+```
+
+```
+spice@ubuntu:~/Desktop/hgfs/Source/temp/gdb$ g++ -g gdb.cpp 
+spice@ubuntu:~/Desktop/hgfs/Source/temp/gdb$ ./a.out 
+
+
+spice@ubuntu:~/Desktop/hgfs/Source/temp/gdb$ sudo gdb a.out
+(gdb) shell ps -aux
+...
+spice      4769  0.0  0.0   4220   712 pts/6    t+   12:37   0:00 ./a.out
+...
+(gdb) attach 4769
+```
+```
+(gdb) detach
+Detaching from program: /mnt/hgfs/Source/temp/gdb/a.out, process 4769
 ```
