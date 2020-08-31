@@ -351,3 +351,13 @@ spice      4769  0.0  0.0   4220   712 pts/6    t+   12:37   0:00 ./a.out
 (gdb) detach
 Detaching from program: /mnt/hgfs/Source/temp/gdb/a.out, process 4769
 ```
+
+
+
+
+
+step模式：
+就是在“step”模式下执行“step”下一指令，可以保证当前的线程不会被抢占，因为其它线程不会执行。而除了“step”以外的指令，如“continue”、“until”和“finish”会导致其它线程重新开始执行。
+```
+(gdb) show scheduler-locking
+```
