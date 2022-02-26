@@ -154,7 +154,7 @@ yanggen5@ubuntu:temp$ addr2line -e a.out
 0x7ffff7a2d830/home/yanggen5/source/temp/main.c:11
 /home/yanggen5/source/temp/main.c:44
 ```
-
+## 有时候gcc版本过低可能需要打开-funwind-tables编译选项
 
 
 
