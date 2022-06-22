@@ -30,7 +30,7 @@ git config --global user.email "我的github所使用的注册邮箱"
 	这样就把本地仓库关联到github上了。
 	
 
-上传代码：
+## 上传代码：
 	执行
 		git add . #注意add 和 . 之间是有空格的。
 	将所有文件添加到仓库中,然后执行
@@ -40,4 +40,14 @@ git config --global user.email "我的github所使用的注册邮箱"
 	将代码submit到github上。实测可以只执行git push
 	另外执行git pull则是将代码从github更新到本地。
 
+## 查看当前分支的url
+	`git remote show origin`
 
+## github token
+自从2021年8月13日后不再支持用户名密码的方式验证，推送代码需要创建个人访问令牌（personal access token）
+
+令牌生成： github网页settings -> Developer settings -> Personal access tokens -> Generate new token
+(Expiration为有效时间，最好选择NO Expiration)
+
+生成后在仓库中设置:
+`git remote set-url origin https://<token>@github.com/<username>/<repo>.git`
