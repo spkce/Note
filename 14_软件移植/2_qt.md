@@ -1,5 +1,5 @@
 ## 1.下载qt
-qt官网：https://www.qt.io/，选择5.9.0版本下载
+qt官网：https://www.qt.io/，下载页面https://download.qt.io/选择5.9.0版本下载
 qt-everywhere-opensource-src-5.9.0.tar.xz
 
 注意：同时有.tar.xz和zip两个包，linux 使用qt-everywhere-opensource-src-5.9.0.tar.xz，不能在window文件系统中解压，一些软连接可能会损坏
