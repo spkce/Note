@@ -38,9 +38,6 @@ QMAKE_STRIP             = /opt/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux/
 ## 5. 编译
 执行 make （可能需要sudo）
 
-## 6. 安装
-执行 make install （可能需要sudo）
-
 
 ## 错误解决
 
@@ -81,3 +78,72 @@ Makefile:671: recipe for target '../../lib/libQt5Location.so.5.9.0' failed
 639 **********/
 
 ```
+
+
+## 6. 安装
+执行 make install （可能需要sudo）
+然后将 /opt目录下成果物拷贝到开发板的/opt下
+### 环境变量设置
+```
+export QTEDIR=/opt/qt5.9.0
+export LD_LIBRARY_PATH=/opt/qt5.9.0/lib:$LD_LIBRARY_PATH
+#export QT_QPA_GENERIC_PLUGINS=tslib
+export QT_QPA_FONTDIR=$QTEDIR/lib/fonts 
+export QT_QPA_PLATFORM_PLUGIN_PATH=$QTEDIR/plugins 
+export QT_QPA_PLATFORM=linuxfb:fb=/dev/fb0:size=480x272:mmSize=480x272:offset=0x0:tty=/dev/tty1
+export QT_QPA_FB_TSLIB=1
+export LD_PRELOAD=/lib/preloadable_libiconv.so
+```
+
+```
+##指定Qt lib下的动态库
+ export LD_LIBRARY_PATH=/opt/Qt5.9.6/lib
+ ##指定Qt下的插件
+ export QT_QPA_PLATFORM_PLUGIN_PATH=/opt/Qt5.9.6/plugins
+ ##指定屏幕的设备⽂件
+ export QT_QPA_PLATFORM=linuxfb:fb=/dev/fb0
+ ##指定Qt的字体库（可以⾃⾏添加）
+ export QT_QPA_FONTDIR=/opt/Qt5.9.6/lib/fonts
+```
+5.9.0可能没有字库 /opt/qt5.9.0/fonts/, 字库文件为qpf
+## 测试程序
+
+### 编译
+
+```
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QLabel>
+
+class HelloWidget : public QWidget
+{
+    Q_OBJECT
+public:
+    explicit HelloWidget(QWidget *parent = 0);
+    ~HelloWidget();
+    //label
+    QLabel *m_labelInfo;
+};
+
+HelloWidget::HelloWidget(QWidget *parent) : QWidget(parent)
+{
+    resize(300, 200);
+    m_labelInfo = new QLabel( tr("<h1>Hello Widget!</h1>"), this );
+    m_labelInfo->setGeometry(10, 10, 200, 40);
+}
+
+HelloWidget::~HelloWidget()
+{
+    delete m_labelInfo; m_labelInfo = NULL;
+}
+
+int main(int argc, char* argv[])
+{
+    QApplication a(argc, argv);
+    HelloWidget hw;
+    hw.show();
+
+    return a.exec();
+}
+
+```
+g++ moc_hellowidget.o hellowidget.o main.o -L"C:\Qt\Qt5.4.0\5.4\mingw491_32\lib" -lQt5Core -lQt5Gui -lQt5Widgets
