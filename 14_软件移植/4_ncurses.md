@@ -8,9 +8,7 @@ ncurses-5.9.tar.gz解压到/home下面
 ./configure -host=arm-linux-gnueabihf -prefix=/opt/ncurses -enable-static --enable-widec CPPFLAGS="-P" --without-manpages --without-progs --without-tack --without-tests
 ```
 
-```
-./configure --host=arm-linux-gnueabihf --prefix=/home/vmuser/ncurses --enable-widec --with-shared
-```
+
 
 错误
 ```
@@ -53,6 +51,12 @@ ln -s /opt/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux/bin/arm-linux-gnueab
 还有其他问题
 
 * 最终5.8版本没有问题
+
+```
+./configure --host=arm-linux-gnueabihf --prefix=/home/vmuser/ncurses --enable-widec --with-shared
+```
+
+
 
 编译ncurse库时，make install出现如下错误：
 ./run_tic.sh: line 113: /usr/local/bin/tic: cannot execute binary file
