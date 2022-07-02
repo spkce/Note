@@ -43,7 +43,7 @@ In file included from ../c++/cursesm.h:39:0,
 编译器版本过高。解决方法有两个，一是更新ncurses到6.2版本，或者降低编译器版本。
 
 
-解决： 强制改链接
+解决： 强制改链接 （编译完记得改回来）
 root@ubuntu:/home/vmuser/ncurses-6.2# ls /usr/bin/strip -al
 lrwxrwxrwx 1 root root 22 Aug  5  2019 /usr/bin/strip -> x86_64-linux-gnu-strip
 ln -s /opt/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux/bin/arm-linux-gnueabihf-strip /usr/bin/strip
@@ -53,9 +53,9 @@ ln -s /opt/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux/bin/arm-linux-gnueab
 * 最终5.8版本没有问题
 
 ```
-./configure --host=arm-linux-gnueabihf --prefix=/home/vmuser/ncurses --enable-widec --with-shared
+./configure --host=arm-linux-gnueabihf --prefix=/home/vmuser/ncurses --enable-widec --with-shared -enable-static
 ```
-
+--enable-widec ？
 
 
 编译ncurse库时，make install出现如下错误：

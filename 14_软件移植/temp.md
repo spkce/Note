@@ -27,8 +27,10 @@ su 和 sudo 的区别：
 1.sudo su切换到root时原用户的环境变量也一并丢失。应使用sudo -i
 
 2.make和make install 也一样
+
+
 ————————————————
 版权声明：本文为CSDN博主「selwynzhou」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
 原文链接：https://blog.csdn.net/weixin_47715886/article/details/108963986
 
-
+也可以sudo -s
