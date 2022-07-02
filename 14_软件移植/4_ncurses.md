@@ -53,9 +53,10 @@ ln -s /opt/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux/bin/arm-linux-gnueab
 * 最终5.8版本没有问题
 
 ```
-./configure --host=arm-linux-gnueabihf --prefix=/home/vmuser/ncurses --enable-widec --with-shared -enable-static
+./configure --host=arm-linux-gnueabihf --prefix=/home/vmuser/ncurses -enable-static
 ```
 --enable-widec ？
+选择就是libncursesw.a 否则为libncurses.a
 
 
 编译ncurse库时，make install出现如下错误：

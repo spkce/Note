@@ -10,11 +10,13 @@ mysql 依赖ncurses库
 
 
 ## 编译PC的sql
-./configure -prefix=/usr/local/mysql
+./configure -prefix=/opt/mysql-5.1.73
+
+只make 不 make install
 
 ## 编译arm的sql
 
-修改configure
+修改configure, 有四处
 ```
   if test "$cross_compiling" = yes; then
   echo "skip corss_compiling test";
@@ -29,12 +31,10 @@ else
 ```
 
 ```
-./configure --host=arm-linux --enable-static --with-named-curse-libs=/home/vmser/ncurses/lib/libncursesw.a -prefix=/home/vmser/mysql --without-debug --without-docs --without-man --without-bench --with-charset=gb2312 --with-extra-charsets=ascii,latin1,utf8
+./configure --host=arm-linux-gnueabihf --enable-static --with-named-curses-libs=/home/vmuser/ncurses/lib/libncurses.a -prefix=/opt/mysql-5.1.73 --without-debug --without-docs --without-man --without-bench --with-charset=gb2312 --with-extra-charsets=ascii,latin1,utf8
 ```
 
-
-
-
+编译 make
 
 错误
 
@@ -43,3 +43,14 @@ mysql.cc:2687:37: error: invalid conversion from ‘char’ to ‘char*’
 field_names[i][num_fields*2]= '\0';
 改成
 field_names[i][num_fields*2]= "";
+
+错误：
+/bin/bash: ./gen_lex_hash: cannot execute binary file: Exec format error
+
+从PC版本代码的将gen_lex_hash 拷贝过来
+
+安装 make install
+
+
+拷贝的/opt/mysql-5.1.73到开发板的相同目录，注意目录必须相同
+
