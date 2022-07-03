@@ -48,7 +48,14 @@ field_names[i][num_fields*2]= "";
 /bin/bash: ./gen_lex_hash: cannot execute binary file: Exec format error
 
 从PC版本代码的将gen_lex_hash 拷贝过来
+```
+vmuser@ubuntu:temp$ cp lex_hash.h ../mysql-5.1.73/sql/
+vmuser@ubuntu:temp$ cp gen_lex_hash ../mysql-5.1.73/sql/
+vmuser@ubuntu:temp$ ls^C
+vmuser@ubuntu:temp$ touch -m ../mysql-5.1.73/sql/gen_lex_hash
+vmuser@ubuntu:temp$ touch -m ../mysql-5.1.73/sql/lex_hash.h
 
+```
 安装 make install
 
 
