@@ -126,9 +126,21 @@ configure: WARNING: unrecognized options: --with-partition
 修改为：
 --with-plugins=partition
 
-如何生成libqsqlmysql.so
+如何生成libqsqlmysql.so （需要以来mysql）
+
+
+进入 qtbase/src/plugins/sqldrivers/mysql目录下 修改mysql.pro
+
+```shell
+QMAKE_USE += mysql
 INCLUDEPATH += /opt/qt5.9.5-a7/include \
 			/opt/mysql-5.1.73/include
 LIBS += -L/opt/mysql-5.1.73/lib/mysql -lmysqlclient
+```
+执行 qmake mysql.pro
+make
+即可生成libqsqlmysql.so
 
 
+libqsqlmysql.so需要放在下面目录才可起作用
+/opt/qt5.9.5-a7/plugins/sqldrivers
