@@ -52,6 +52,9 @@ git config --global user.email "我的github所使用的注册邮箱"
 生成后在仓库中设置:
 `git remote set-url origin https://<token>@github.com/<username>/<repo>.git`
 
+## 查看仓库url地址
+git remote show origin
+
 # git clone 仓库太大问题
 只克隆一个commit id， 工程太大clone不到本地可用此方法
 ```
