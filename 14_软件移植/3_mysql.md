@@ -144,3 +144,10 @@ make
 
 libqsqlmysql.so需要放在下面目录才可起作用
 /opt/qt5.9.5-a7/plugins/sqldrivers
+
+
+ 输入设备支持：
+```
+export QT_QPA_GENERIC_PLUGINS=tslib,evdevkeyboard:/dev/input/eventx,evdevmouse:/dev/input/eventx
+```
+tslib是和触摸屏设备相关的，evdevkeyboard 和 evdevmouse 分别是键盘和鼠标设备，使用它们的前提是编译QT时配置了 -evdev ，貌似鼠标键盘就算不填设备名（如/dev/input/event5）也能被QT识别并能正常使用（前提是支持热插拔）。
