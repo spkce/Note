@@ -17,4 +17,5 @@ tar -cvf rumenz.tar rumenz.txt
 打包并压缩一个文件(使用bzip2压缩)
 
 tar -jcvf rumenz.tar.bz2 rumenz.txt
+tar -jxvf rumenz.tar.bz2
 ```
