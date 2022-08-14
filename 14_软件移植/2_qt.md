@@ -94,8 +94,8 @@ export QT_QPA_PLATFORM=linuxfb:fb=/dev/fb0:size=480x272:offset=0x0:tty=/dev/tty1
 ```
 开发板环境变量设置：
 ```shell
-export QTEDIR=/opt/qt5.9.5
-export LD_LIBRARY=/opt/qt5.9.5-a7/lib:$LD_LIBRARY
+export QTEDIR=/opt/qt5.9.5-a7
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/qt5.9.5-a7/lib
 export QT_OPA_FONTDIR=$QTEDIR/lib/fonts
 export QT_QPA_PLATFORM_PLUGIN_PATH=$QTEDIR/plugins
 export QT_QPA_PLATFORM=linuxfb:fb=/dev/fb0:size=490x272:offset=0x0:tty=/dev/tty1
@@ -132,3 +132,7 @@ int main(int argc, char* argv[])
 `make`
 
 最后将程序拷贝到开发板上运行
+
+
+#qt软键盘
+https://download.qt.io/archive/qt/5.9/5.9.5/

@@ -9,6 +9,8 @@ tar -xzvf rumenz.tar.gz -C /tmp
 打包一个文件,不压缩
 
 tar -cvf rumenz.tar rumenz.txt
+解包
+tar -xvf rumenz.tar
 
 打包并压缩一个文件(使用gzip压缩)
 
