@@ -67,3 +67,6 @@ $ git remote set-branches --add origin  origin 'remote_branch_name'
 $ git fetch --depth 1 origin remote_branch_name
 $ git checkout remote_branch_name
 ```
+
+# 设置git 默认编辑器
+git config --global core.editor vim

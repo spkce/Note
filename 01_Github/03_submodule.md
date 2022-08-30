@@ -1,7 +1,10 @@
 
 ## 添加子模块
+git submodule add <url> <path>
+```
 $ git submodule add https://github.com/spencermountain/spacetime.git
 
+```
 ## 删除子模块
 直接删掉子模块
 $ rm -rf sub_folder
