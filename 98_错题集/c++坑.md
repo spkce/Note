@@ -97,3 +97,9 @@ int main()
 
 
 ## atexit先于全局变量析构函数执行
+
+
+## std::string::c_str() 和 const char* 的坑
+
+std::string::c_str() 给出的指针会在对象析构后不可用。因此
+substr().c_str()要小心。substr()会产生一样临时变量
