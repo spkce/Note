@@ -18,3 +18,13 @@ mount /dev/vdb /data/
 6、输入：sync 将缓存写入服务器；
 7、执行命令：init -6 重启服务器；
 8、重启服务器后，输入命令： df -lh 查看该磁盘是否正常挂载。或者使用 lsblk
+
+### cifs
+需要安装cifs
+sudo apt-get install cifs-utils
+
+sudo mount -t cifs //192.168.2.101/source /home/pi/Desktop/Source -o username=spkce,gid=1000,uid=1000
+sudo mount -t cifs //192.168.2.101/source /home/pi/Desktop/Source -o username=spkce@hkauto.com,gid=1000,uid=1000
+
+取消挂载：
+sudo umonut /home/pi/Desktop/Source

@@ -23,3 +23,6 @@ $git ls-files --stage www/topsdk
 $ rm .gitmodules
 这时候就可以进行add操作了
 $ git add remote_repo sub_folder_path
+
+
+### git subtree
