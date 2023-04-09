@@ -29,6 +29,11 @@ git checkout -b develop origin/develop
 git push origin newbranch
 
 ```
+## 将当前修改推送到一个新分支（临时）
+```
+git push origin master : temp
+
+```
 ## merge
 
 ```

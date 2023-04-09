@@ -1,0 +1,1 @@
+在 shell脚本中设置环境变量，shell退出后不能使用。因为shell脚本是再开了一个shell。环境不能给上一个shell
