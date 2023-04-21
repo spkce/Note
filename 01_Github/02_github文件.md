@@ -37,3 +37,9 @@ HEAD^ 表示上一个版本，即上一次的commit，也可以写成HEAD~1
 
 回退到指定id
 git reset --hard commit_id  //退到/进到 指定的commit
+
+## git add 退回
+
+```
+git reset HEAD <文件名>
+```

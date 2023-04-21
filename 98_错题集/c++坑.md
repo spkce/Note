@@ -103,3 +103,14 @@ int main()
 
 std::string::c_str() 给出的指针会在对象析构后不可用。因此
 substr().c_str()要小心。substr()会产生一样临时变量
+
+## for (auto: ) 的坑
+
+auto可能有坑，如下：
+```
+for(auto a : <int>[])
+{
+	......
+}
+```
+auto 可能是int 而不是 int &， 在for中 a = 0；不会改变数组的值
