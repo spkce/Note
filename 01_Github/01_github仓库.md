@@ -70,3 +70,7 @@ $ git checkout remote_branch_name
 
 # 设置git 默认编辑器
 git config --global core.editor vim
+
+
+# 防止每次都需要输入密码
+git config --global credential.helper store
