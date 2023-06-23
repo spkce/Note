@@ -22,8 +22,12 @@ git branch -d -r branchname 删除远程branchname分支
 ## 拉取远程分支
 ```
 git checkout -b develop origin/develop
-
 ```
+## 删除远程分支
+```
+git push origin --delete branch_name
+```
+
 ## 推送新分支到远程
 ```
 git push origin newbranch

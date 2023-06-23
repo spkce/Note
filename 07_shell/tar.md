@@ -14,7 +14,10 @@ tar -xvf rumenz.tar
 
 打包并压缩一个文件(使用gzip压缩)
 
- tar -zcvf rumenz.tar.gz rumenz.txt
+tar -zcvf rumenz.tar.gz rumenz.txt
+
+解压
+tar -zxvf rumenz.tar.gz rumenz.txt
 
 打包并压缩一个文件(使用bzip2压缩)
 
