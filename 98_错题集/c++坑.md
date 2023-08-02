@@ -114,3 +114,92 @@ for(auto a : <int>[])
 }
 ```
 auto 可能是int 而不是 int &， 在for中 a = 0；不会改变数组的值
+
+
+
+2. std::swap
+一下代码会出现double free
+```c++
+
+class CA 
+{
+public:
+	CA()
+	{
+		printf("\033[0;35m""create :%p ""\033[0m\n", this);
+		m_p = new char[32];
+		memset(m_p, 0, 32);
+	}
+
+	~CA() 
+	{
+		if (m_p)
+		{
+			printf("\033[0;35m""this %p, delete:%p ""\033[0m\n", this, m_p);
+			delete [] m_p;
+			m_p = nullptr;
+		}
+	}
+
+	char* m_p;
+};
+
+int main(int argc, char **argv)
+{
+
+	CA a1; 
+	CA a2;
+
+	memcpy(a1.m_p, "eeee", sizeof("eeee"));
+	memcpy(a2.m_p, "ssss", sizeof("ssss"));
+	
+	printf("\033[0;35m""a1:%p,p:%p = %s ""\033[0m\n", &a1, a1.m_p, a1.m_p);
+	printf("\033[0;35m""a2:%p,p:%p = %s""\033[0m\n", &a2, a2.m_p, a2.m_p);
+
+	std::swap(a1, a2);
+
+	printf("\033[0;35m""a1:%p,p:%p = %s""\033[0m\n", &a1, a1.m_p, a1.m_p);
+	printf("\033[0;35m""a2:%p,p:%p = %s""\033[0m\n", &a2, a2.m_p, a2.m_p);
+
+}
+```
+运行后：
+```shell
+create :0x7fffee4c4a98
+create :0x7fffee4c4aa0
+a1:0x7fffee4c4a98,p:0x7fffe5954ec0 = eeee
+a2:0x7fffee4c4aa0,p:0x7fffe5954ef0 = ssss
+this 0x7fffee4c4a60, delete:0x7fffe5954ec0
+a1:0x7fffee4c4a98,p:0x7fffe5954ef0 = ssss
+a2:0x7fffee4c4aa0,p:0x7fffe5954ec0 =
+this 0x7fffee4c4a98, delete:0x7fffe5954ef0
+this 0x7fffee4c4aa0, delete:0x7fffe5954ec0
+free(): double free detected in tcache 2
+Aborted (core dumped)
+```
+
+这是因为在std::swap中会产生一个零时变量,零时变量析构的时候删除了指针
+```c++
+template<typename T>
+void swap(T& a, T& b){
+  T temp(a);
+  a = b;
+  b = temp;
+}
+```
+
+办法是特殊化swap
+```shell
+namespace std
+{
+//特殊化的std::swap，当T是Widget类型时使用如下实现
+template<>
+void swap<CA>(CA& a, CA& b)
+{
+    swap(a.m_p, b.m_p);
+}
+}
+```
+
+3. 库
+首先是泛用库boost，界面库Qt，通信库ZeroMQ，视觉库OpenCV，并发库tbb，深度学习Caffe，序列化Protobuf，加上一些cppformat之类的小库。然后就是http客户端curl，http服务器 crow，gzip压缩zlib，json序列化nlohmann/json，二进制序列化protobuf，嵌入式数据库sqlite，日志库glog，参数解析库gflags，消息队列zmq，rpc库brpc，tcp网络库evpp，3d仿真osg，图形图像opencv，stl,boost,qt上面都讲过了。

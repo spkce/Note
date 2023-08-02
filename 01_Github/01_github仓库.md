@@ -74,3 +74,17 @@ git config --global core.editor vim
 
 # 防止每次都需要输入密码
 git config --global credential.helper store
+
+
+# 查看
+
+git config user.name
+git config user.email
+git config user.password
+
+
+# 修改密码
+
+git config --global user.name "xxx(新的用户名)"
+git config --global user.email "123456@163.com(新的邮箱)"
+git config --global user.password "123456(新的密码)"
