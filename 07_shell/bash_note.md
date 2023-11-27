@@ -67,6 +67,7 @@ objdump -t xxx.so
 
 objdump -t libmylib.so |c++filt | egrep “foo|bar”
 
+objdump -d -S
 ```
 
 # readelf
@@ -76,4 +77,13 @@ readelf -c xxx.a
 
 # 查看静态库定义的函数
 readelf -A xxx.so 
+```
+
+# grep 
+```shell
+# 查找文件中内容
+grep func . -rn  # func 为要查找的内容
+
+# 正则表达式
+grep -E 'xxx' # xxx 为正则表达式
 ```

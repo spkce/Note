@@ -48,11 +48,11 @@ git cherry-pick <submitID>
 cherry-pick 多个提交
 git cherry-pick <HashA> <HashB>
 
-cherry-pick A到B多个提交
+cherry-pick A到B多个提交 不包含A
 git cherry-pick A..B 
 
-cherry-pick A到B多个提交
-git cherry-pick A..B 
+cherry-pick A到B多个提交 包含A
+git cherry-pick A^..B 
 
 git cherry-pick 是本地操作，
 从A分支cherry-pick到B分支时，请确保cherry-pick 的版本以及pull到本地A分支

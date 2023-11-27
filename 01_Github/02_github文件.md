@@ -61,3 +61,9 @@ git log [选项] [分支名/提交哈希]
 --stat：显示简略统计信息，包括修改的文件和行数。
 --abbrev-commit：使用短提交哈希值。
 --pretty=<格式>：使用自定义的提交信息显示格式。
+
+## 修改最后一次提交
+ git commit --amend 以新的改进后的提交来 替换 掉旧有的最后一次提交
+
+
+ git commit --amend --no-edit
