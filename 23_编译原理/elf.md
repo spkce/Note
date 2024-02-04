@@ -55,58 +55,26 @@ ELF 文件主要的用途有两个:
 
 这里有一个潜在的概念，很少看到其他文章明确点出来。Section Header Table 描述了所有节信息表，而 Program Header Table 其实描述的是所有的 段信息表 
 
-## 节（Section）和段（Segment）
-使用readelf 查看一个程序
-```shell
-spkce@pc-spkce:~$ readelf -l /bin/ls
-
-Elf file type is DYN (Shared object file)
-Entry point 0x5850
-There are 9 program headers, starting at offset 64
-
-Program Headers:
-  Type           Offset             VirtAddr           PhysAddr
-                 FileSiz            MemSiz              Flags  Align
-  PHDR           0x0000000000000040 0x0000000000000040 0x0000000000000040
-                 0x00000000000001f8 0x00000000000001f8  R E    0x8
-  INTERP         0x0000000000000238 0x0000000000000238 0x0000000000000238
-                 0x000000000000001c 0x000000000000001c  R      0x1
-      [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
-  LOAD           0x0000000000000000 0x0000000000000000 0x0000000000000000
-                 0x000000000001e6e8 0x000000000001e6e8  R E    0x200000
-  LOAD           0x000000000001eff0 0x000000000021eff0 0x000000000021eff0
-                 0x0000000000001278 0x0000000000002570  RW     0x200000
-  DYNAMIC        0x000000000001fa38 0x000000000021fa38 0x000000000021fa38
-                 0x0000000000000200 0x0000000000000200  RW     0x8
-  NOTE           0x0000000000000254 0x0000000000000254 0x0000000000000254
-                 0x0000000000000044 0x0000000000000044  R      0x4
-  GNU_EH_FRAME   0x000000000001b1a0 0x000000000001b1a0 0x000000000001b1a0
-                 0x0000000000000884 0x0000000000000884  R      0x4
-  GNU_STACK      0x0000000000000000 0x0000000000000000 0x0000000000000000
-                 0x0000000000000000 0x0000000000000000  RW     0x10
-  GNU_RELRO      0x000000000001eff0 0x000000000021eff0 0x000000000021eff0
-                 0x0000000000001010 0x0000000000001010  R      0x1
-
- Section to Segment mapping:
-  Segment Sections...
-   00
-   01     .interp
-   02     .interp .note.ABI-tag .note.gnu.build-id .gnu.hash .dynsym .dynstr .gnu.version .gnu.version_r .rela.dyn .rela.plt .init .plt .plt.got .text .fini .rodata .eh_frame_hdr .eh_frame
-   03     .init_array .fini_array .data.rel.ro .dynamic .got .data .bss
-   04     .dynamic
-   05     .note.ABI-tag .note.gnu.build-id
-   06     .eh_frame_hdr
-   07
-   08     .init_array .fini_array .data.rel.ro .dynamic .got
-```
-
-Program Headers 下面罗列出了所有的段信息
-
-Section to Segment mapping 罗列了 各个段（Segment）包含了哪些节（Section）.
-
-**段是1个或者多个节的集合**
-
 ## ELF Header
+
+ 字段 | 大小（byte） | 含义
+---------|----------|---------
+ e_ident | 16 | Magic number and other info
+ e_type | 2 | Object file type
+ e_machine | 2 | Architecture
+ e_version | 4 | Object file version
+ e_entry | 32位4byte,64位8byte | Entry point virtual address
+ e_phoff | 32位4byte,64位8byte | Program header table file offset
+ e_shoff | 32位4byte,64位8byte | Section header table file offset
+ e_flags | 4 | Processor-specific flags
+ e_ehsize | 32位4byte,64位8byte | ELF header size in bytes
+ e_phentsize | 2,（32位值52，64位值是64） | Program header table entry size
+ e_phnum | 2 | Program header table entry count
+ e_shentsize | 2 | Section header table entry size
+ e_shnum | 2 | Section header table entry count
+ e_shstrndx | 2 | Section header string table index
+
+
 ```shell
 spkce@pc-spkce:~$ readelf -h /bin/ls
 ELF Header:
@@ -151,8 +119,116 @@ ELF Header:
 |Number of section headers|节头表中有表项的数量(有多少个节）||
 |Section header string table index|节头表中与节名字表相对应的表项索引信息|段没名字，但节是有名字的,节的名字需要另外保存，对应到 .shstrtab 节|
 
-## 程序头表（Program Header Table）
-readelf -l <path/for/elf> 命令可以查看程序表头的信息。需要注意的是，".o" 文件一般是没有程序表头的。
+### e_ident
+e_ident占16个字节。前四个字节被称作ELF的Magic Number。
+
+
+ magic number | EI_CLASS|EI_DATA| EI_VERSION | 填充字节
+---------|----------|---------|---------|---------
+ 4byte| 1byte |1byte|1byte| 9byte|
+
+* magic number: 固定为 7F,'E','L','F'
+* EI_CLASS : 指明ELF文件是32位还是64位：
+	0: Invalid class
+	1: 32-bit
+	2：64-bit
+* EI_DATA: 编码方式：
+	0: Invalid
+	1: little-endian
+	2：big-endian
+* EI_VERSION: elf header版本号目前值都为1
+* 填充字段都为0
+
+### e_type 描述了ELF文件类型：
+它的取值：ET_开头宏定义
+```c++
+#define ET_NONE		0		/* No file type */
+#define ET_REL		1		/* Relocatable file */
+#define ET_EXEC		2		/* Executable file */
+#define ET_DYN		3		/* Shared object file */
+#define ET_CORE		4		/* Core file */
+#define	ET_NUM		5		/* Number of defined types */
+#define ET_LOOS		0xfe00		/* OS-specific range start */
+#define ET_HIOS		0xfeff		/* OS-specific range end */
+#define ET_LOPROC	0xff00		/* Processor-specific range start */
+#define ET_HIPROC	0xffff		/* Processor-specific range end */
+```
+
+### e_machine 文件面向的架构
+它的取值：EM_开头宏定义
+```c++
+#define EM_NONE		 0	/* No machine */
+#define EM_M32		 1	/* AT&T WE 32100 */
+#define EM_SPARC	 2	/* SUN SPARC */
+#define EM_386		 3	/* Intel 80386 */
+#define EM_68K		 4	/* Motorola m68k family */
+#define EM_88K		 5	/* Motorola m88k family */
+#define EM_IAMCU	 6	/* Intel MCU */
+#define EM_860		 7	/* Intel 80860 */
+#define EM_MIPS		 8	/* MIPS R3000 big-endian */
+#define EM_S370		 9	/* IBM System/370 */
+#define EM_MIPS_RS3_LE	10	/* MIPS R3000 little-endian */
+
+```
+
+### e_version
+elf文件版本号
+
+### e_entry
+执行入口点，如果没有入口，保持为0
+### e_phoff
+program header table 的offset 如果没有PH，保持为0
+### e_shoff
+section header table 的offset 如果没有SH，保持为0
+### e_flags
+特定处理器标志，intel 32-bit、64-bit没有定义，保持为0
+
+### e_ehsize
+elf header的大小 32位elf为52，64位为64字节
+
+### e_phentsize
+program header table中每一个入口的大小
+
+### e_phnum 
+若没有program header table，e_phnum为0.
+e_phnum* e_phentsize == program header table大小
+
+### e_shentsize 
+section header table 中 entry的大小，即每个section header占多少字节
+### e_shnum
+section header table中header的数目。如果文件没有section headertable,e_shnum的值为0。e_shentsize* e_shnum == sectionheader table的大小。
+
+## e_shstmdx
+存储节的名字的节对应的节头在节头表中的索引号。如果没有section name string table, e_shstmdx的值是SHN_UNDEF.
+
+例如：
+```shell
+spkce@pc-spkce:~/source/elf$ readelf -h a.elf
+ELF Header:
+  Magic:   7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00
+  Class:                             ELF64
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              DYN (Shared object file)
+  Machine:                           Advanced Micro Devices X86-64
+  Version:                           0x1
+  Entry point address:               0x13a0
+  Start of program headers:          64 (bytes into file)
+  Start of section headers:          346696 (bytes into file)
+  Flags:                             0x0
+  Size of this header:               64 (bytes)
+  Size of program headers:           56 (bytes)
+  Number of program headers:         13
+  Size of section headers:           64 (bytes)
+  Number of section headers:         39
+  Section header string table index: 38
+```
+
+
+## 节（Section）和段（Segment）
+使用readelf -l 查看一个程序, 需要注意的是，".o" 文件一般是没有程序表头的。
 ```shell
 spkce@pc-spkce:~$ readelf -l /bin/ls
 
@@ -195,25 +271,108 @@ Program Headers:
    07
    08     .init_array .fini_array .data.rel.ro .dynamic .got
 ```
+
+Program Headers 下面罗列出了所有的段信息,
+
+Section to Segment mapping 罗列了 各个段（Segment）包含了哪些节（Section）.
+
+所有这些段都登记在一张称为 程序头表（Program Header Table）的数组里。程序表头的每一个表项是一个Elf64_Phdr结构，通过每一个表项可以定位到对应的段，所以也可称之为段头表。程序头只对可执行文件或共享目标文件有意义，对于其它类型的目标文件，该信息可以忽略。
+
+**段是1个或者多个节的集合**
+
+
+## 程序头表（Program Header Table）也叫段头表
+需要注意的是，".o" 文件一般是没有程序表头的。
+
 Program Headers 罗列了所有段的信息
 
-|	字段	|	含义	|	|
-|:---------------:|:---------------:|:---------------:|
-|Type|段类型|用于标识如何解析该段内容|
-|Offset|本段内容在文件的位置（Byte）||
-|FileSiz|本段内容在文件中的大小（Byte）||
-|VirtAddr|本段内容的开始位置在进程空间中的虚拟地址（Byte）||
-|MemSiz|本段内容在进程空间中的大小（Byte）||
-|PhysAddr|本段内容的开始位置在进程空间中的物理地址|由于MMU的存在，物理地址不可知，大多时候等于虚拟地址|
-|Flags|段的权限|R/W/E 分别表示 读/写/可执行|
-|Align|本段内容的开始位置在进程空间中的物理地址||
+|	字段	|	大小 |含义	|	|
+|:---------------:|:---------------:|:---------------:|:---------------:|
+|Type||段类型|用于标识如何解析该段内容|
+|Offset||本段内容在文件的位置（Byte）||
+|FileSiz||本段内容在文件中的大小（Byte）||
+|VirtAddr||本段内容的开始位置在进程空间中的虚拟地址（Byte）||
+|MemSiz||本段内容在进程空间中的大小（Byte）||
+|PhysAddr||本段内容的开始位置在进程空间中的物理地址|由于MMU的存在，物理地址不可知，大多时候等于虚拟地址|
+|Flags||段的权限|R/W/E 分别表示 读/写/可执行|
+|Align||本段内容的开始位置在进程空间中的物理地址||
 
-**Type 的取值与含义如下:**
-* PHDR：此类型的程序头如果存在的话，它表明的是其自身所在的程序头表在文件或内存中的位置和大小。这样的段在文件中可以不存在，只有当所在程序头表所覆盖的段只是整个程序的一部分时，才会出现一次这种表项，而且这种表项一定出现在其它可装载段的表项之前。
-* INTERP：本段指向了一个以”null”结尾的字符串，这个字符串是一个 ELF 解析器的路径。这种段类型只对可执行程序有意义，当它出现在共享目标文件中时，是一个无意义的多余项。在一个 ELF 文件中它最多只能出现一次，而且必须出现在其它可装载段的表项之前。
-* LOAD：此类型表明本程序头指向一个可装载的段。段的内容会被从文件中拷贝到内存中。
-* DYNAMIC：此类型表明本段指明了动态连接的信息。
-* NOTE：本段指向了一个以”null”结尾的字符串，这个字符串包含一些附加的信息。
+```c++
+//elf.h
+typedef struct
+{
+  Elf32_Word	p_type;			/* Segment type */
+  Elf32_Off	p_offset;		/* Segment file offset */
+  Elf32_Addr	p_vaddr;		/* Segment virtual address */
+  Elf32_Addr	p_paddr;		/* Segment physical address */
+  Elf32_Word	p_filesz;		/* Segment size in file */
+  Elf32_Word	p_memsz;		/* Segment size in memory */
+  Elf32_Word	p_flags;		/* Segment flags */
+  Elf32_Word	p_align;		/* Segment alignment */
+} Elf32_Phdr;
+
+typedef struct
+{
+  Elf64_Word	p_type;			/* Segment type */
+  Elf64_Word	p_flags;		/* Segment flags */
+  Elf64_Off	p_offset;		/* Segment file offset */
+  Elf64_Addr	p_vaddr;		/* Segment virtual address */
+  Elf64_Addr	p_paddr;		/* Segment physical address */
+  Elf64_Xword	p_filesz;		/* Segment size in file */
+  Elf64_Xword	p_memsz;		/* Segment size in memory */
+  Elf64_Xword	p_align;		/* Segment alignment */
+} Elf64_Phdr;
+```
+
+### p_type
+
+```c++
+//elf.h
+#define	PT_NULL		0		/* Program header table entry unused */
+#define PT_LOAD		1		/* Loadable program segment */
+#define PT_DYNAMIC	2		/* Dynamic linking information */
+#define PT_INTERP	3		/* Program interpreter */
+#define PT_NOTE		4		/* Auxiliary information */
+#define PT_SHLIB	5		/* Reserved */
+#define PT_PHDR		6		/* Entry for header table itself */
+#define PT_TLS		7		/* Thread-local storage segment */
+#define	PT_NUM		8		/* Number of defined types */
+#define PT_LOOS		0x60000000	/* Start of OS-specific */
+#define PT_GNU_EH_FRAME	0x6474e550	/* GCC .eh_frame_hdr segment */
+#define PT_GNU_STACK	0x6474e551	/* Indicates stack executability */
+#define PT_GNU_RELRO	0x6474e552	/* Read-only after relocation */
+#define PT_LOSUNW	0x6ffffffa
+#define PT_SUNWBSS	0x6ffffffa	/* Sun Specific segment */
+#define PT_SUNWSTACK	0x6ffffffb	/* Stack segment */
+#define PT_HISUNW	0x6fffffff
+#define PT_HIOS		0x6fffffff	/* End of OS-specific */
+#define PT_LOPROC	0x70000000	/* Start of processor-specific */
+#define PT_HIPROC	0x7fffffff	/* End of processor-specific */
+```
+
+* PT_LOAD（Program Header Type-Loadable）：此类型表明本程序头指向一个可装载的段。段的内容会被从文件中拷贝到内存中。段在文件中的大小是 p_filesz，在内存中的大小是 p_memsz。如果 p_memsz 大于 p_filesz，在内存中多出的存储空间应填 0 补充，也就是说，段在内存中可以比在文件中占用空间更大；而相反，p_filesz 永远不应该比 p_memsz 大，因为这样的话，内存中就将无法完整地映射段的内容。在程序头表中，所有 PT_LOAD 类型的程序头按照 p_vaddr 的值做升序排列。
+
+* PT_DYNAMIC（Program Header Type-Dynamic）：此类型表明本段指明了动态连接的信息。
+
+* PT_INTERP（Program Header Type-Interpreter）：本段指向了一个以 ”null” 结尾的字符串，这个字符串是一个 ELF 解析器的路径。这种段类型只对可执行程序有意义，当它出现在共享目标文件中时， 是一个无意义的多余项。在一个 ELF 文件中它多只能出现一次，而且必须出现在其它可装载段的表项之前。
+
+* PT_NOTE（Program Header Type-Note）：本段指向了一个以 ”null” 结尾的字符串，这个字符串包含一些附加的信息。
+
+* PT_SHLIB：该段类型是保留的，而且未定义语法。UNIX System V 系统上的应用程序不会包含这种表项。
+
+* PT_PHDR：此类型的程序头如果存在的话，它表明的是其自身所在的程序头表在文件或内存中的位置和大小。这样的段在文件中可以不存在，只有当所在程序头表所覆
+PT_NULL（Program Header Type-Null）：此类型表明本程序头是未使用的，本程序头内的其它成员值均无意义。具 有此种类型的程序头应该被忽略。
+
+
+### p_flags（Program Header-Flags）
+此字段（4 字节）给出本段内容的属性，指明了段的权限。虽然 ELF 文件格式中没有规定，但是一个可执行程序至少会有一个可加载的段。当为可加载段创建内存镜像时，系统会按照 p_flags 的指示给段赋予一定的权限。下方为源码中定义、对应取值及其含义。
+```c++
+#define PF_X		(1 << 0)	/* Segment is executable */
+#define PF_W		(1 << 1)	/* Segment is writable */
+#define PF_R		(1 << 2)	/* Segment is readable */
+#define PF_MASKOS	0x0ff00000	/* OS-specific */
+#define PF_MASKPROC	0xf0000000	/* Processor-specific */
+```
 
 **Align取值：** 对于可装载的段来说，其 虚拟地址 和 文件地址 的值至少要向内存页面大小对齐。此数据成员指明本段内容如何在内存和文件中对齐。如果该值为 0 或 1，表明没有对齐要求；否则，此值应该是一个正整数，并且是 2 的幂次数。虚拟地址 和 文件地址 在对此值取模后应该相等
 
@@ -315,7 +474,38 @@ Key to Flags:
 |Info	|略	|可以查阅章节1提到的《UnderstandingELF.pdf》|
 |Align	|大小对齐信息	|
 
-**节有以下类型：**
+```c++
+//elf.h
+typedef struct
+{
+  Elf32_Word	sh_name;		/* Section name (string tbl index) */
+  Elf32_Word	sh_type;		/* Section type */
+  Elf32_Word	sh_flags;		/* Section flags */
+  Elf32_Addr	sh_addr;		/* Section virtual addr at execution */
+  Elf32_Off	sh_offset;		/* Section file offset */
+  Elf32_Word	sh_size;		/* Section size in bytes */
+  Elf32_Word	sh_link;		/* Link to another section */
+  Elf32_Word	sh_info;		/* Additional section information */
+  Elf32_Word	sh_addralign;		/* Section alignment */
+  Elf32_Word	sh_entsize;		/* Entry size if section holds table */
+} Elf32_Shdr;
+
+typedef struct
+{
+  Elf64_Word	sh_name;		/* Section name (string tbl index) */
+  Elf64_Word	sh_type;		/* Section type */
+  Elf64_Xword	sh_flags;		/* Section flags */
+  Elf64_Addr	sh_addr;		/* Section virtual addr at execution */
+  Elf64_Off	sh_offset;		/* Section file offset */
+  Elf64_Xword	sh_size;		/* Section size in bytes */
+  Elf64_Word	sh_link;		/* Link to another section */
+  Elf64_Word	sh_info;		/* Additional section information */
+  Elf64_Xword	sh_addralign;		/* Section alignment */
+  Elf64_Xword	sh_entsize;		/* Entry size if section holds table */
+} Elf64_Shdr;
+```
+
+### sh_type
 * NULL：本节头是一个无效的（非活动的）节头
 * PROGBITS：本节所含有的信息是由程序定义的，本节内容的格式和含义都由程序来决定。
 * SYMTAB：所有符号表调试信息，strip 可以干掉，不影响运行
@@ -327,6 +517,65 @@ Key to Flags:
 * NOBITS：这一节的内容是空的，节并不占用实际的空间。
 * REL：本节是一个重定位节。
 * DYNSYM：动态链接符号表信息
+```
+#define SHT_NULL	  0		/* Section header table entry unused */
+#define SHT_PROGBITS	  1		/* Program data */
+#define SHT_SYMTAB	  2		/* Symbol table */
+#define SHT_STRTAB	  3		/* String table */
+#define SHT_RELA	  4		/* Relocation entries with addends */
+#define SHT_HASH	  5		/* Symbol hash table */
+#define SHT_DYNAMIC	  6		/* Dynamic linking information */
+#define SHT_NOTE	  7		/* Notes */
+#define SHT_NOBITS	  8		/* Program space with no data (bss) */
+#define SHT_REL		  9		/* Relocation entries, no addends */
+#define SHT_SHLIB	  10		/* Reserved */
+```
+
+### sh_info
+这是个组合字段。它的高4位表示 Symbol Binding，低4位表示 Symbol Type。
+
+Binding
+```c++
+#define STB_LOCAL	0		/* Local symbol */
+#define STB_GLOBAL	1		/* Global symbol */
+#define STB_WEAK	2		/* Weak symbol */
+#define	STB_NUM		3		/* Number of defined types.  */
+#define STB_LOOS	10		/* Start of OS-specific */
+#define STB_GNU_UNIQUE	10		/* Unique symbol.  */
+#define STB_HIOS	12		/* End of OS-specific */
+#define STB_LOPROC	13		/* Start of processor-specific */
+#define STB_HIPROC	15		/* End of processor-specific */
+```
+
+STB_LOCAL: 对象文件外部不可见。
+STB_GLOBAL：所有合并到一起的对象文件都可见。对于同一个 Global Symbol，它的定义可以满足其他地方对它的引用。
+STB_WEAK：类似于 STB_GLOBAL，但匹配时优先级较低。
+
+
+Symbol Type
+```c++
+#define STT_NOTYPE	0		/* Symbol type is unspecified */
+#define STT_OBJECT	1		/* Symbol is a data object */
+#define STT_FUNC	2		/* Symbol is a code object */
+#define STT_SECTION	3		/* Symbol associated with a section */
+#define STT_FILE	4		/* Symbol's name is file name */
+#define STT_COMMON	5		/* Symbol is a common data object */
+#define STT_TLS		6		/* Symbol is thread-local data object*/
+#define	STT_NUM		7		/* Number of defined types.  */
+#define STT_LOOS	10		/* Start of OS-specific */
+#define STT_GNU_IFUNC	10		/* Symbol is indirect code object */
+#define STT_HIOS	12		/* End of OS-specific */
+#define STT_LOPROC	13		/* Start of processor-specific */
+#define STT_HIPROC	15		/* End of processor-specific */
+
+```
+STT_NOTYPE：类型未指定，也可以认为这个类型的 Symbol，在当前的对象文件中没找到其定义，需要外部其他对象文件来提供它的定义。
+STT_OBJECT：关联到一个数据对象，比如数组，变量等。
+STT_FUNC：关联到一个函数或者其他可执行的代码。
+STT_SECTION：关联到可以重定位的 Section。
+STT_FILE：给出了这个对象文件的源文件名，譬如 program.o 的源文件就是 program.c。它的 Section index 为 SHN_ABS。（后面会讲到）
+STT_COMMON：标识了未初始化的公共块。后面会详细讲到。
+STT_TLS：指定了线程本地存储的实体.
 
 ## 符号表
 
@@ -435,6 +684,28 @@ Symbol table '.symtab' contains 65 entries:
 |Ndx	|指定相关联的节|数字：节在节头表中的索引，ABS：绝对值常量，常指文件路径，UND：未定义的，常指需要外部链接的函数、变量等|
 |Name	|符号名字||
 
+
+```c++
+typedef struct
+{
+  Elf32_Word	st_name;		/* Symbol name (string tbl index) */
+  Elf32_Addr	st_value;		/* Symbol value */
+  Elf32_Word	st_size;		/* Symbol size */
+  unsigned char	st_info;		/* Symbol type and binding */
+  unsigned char	st_other;		/* Symbol visibility */
+  Elf32_Section	st_shndx;		/* Section index */
+} Elf32_Sym;
+
+typedef struct
+{
+  Elf64_Word	st_name;		/* Symbol name (string tbl index) */
+  unsigned char	st_info;		/* Symbol type and binding */
+  unsigned char st_other;		/* Symbol visibility */
+  Elf64_Section	st_shndx;		/* Section index */
+  Elf64_Addr	st_value;		/* Symbol value */
+  Elf64_Xword	st_size;		/* Symbol size */
+} Elf64_Sym;
+```
 ## 编译与节和链接与段
 
 在 《linux 目标文件(*.o) bss,data,text,rodata,堆,栈》（https://blog.csdn.net/sunny04/article/details/40627311）  有张图非常形象的描述了 text、data、bss 段的作用，如下

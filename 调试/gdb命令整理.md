@@ -399,6 +399,9 @@ step：当单步执行某一线程时，其它线程不会执行，同时保证�
 ```
 (gdb) show scheduler-locking
 ```
+# 设置动态库的搜索路径
+set solib-search-path设置动态库的搜索路径
+
 
 # layout
 layout：用于分割窗口，可以一边查看代码，一边测试。主要有以下几种用法：

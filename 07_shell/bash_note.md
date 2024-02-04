@@ -87,3 +87,48 @@ grep func . -rn  # func 为要查找的内容
 # 正则表达式
 grep -E 'xxx' # xxx 为正则表达式
 ```
+
+# quota 磁盘配额
+
+
+# pstree
+ptree命令的核心是通过遍历/proc/目录下的进程信息，来确定每个进程的父子关系。在Linux操作系统中，/proc/目录下保存了所有正在运行的进程的信息。每个进程的信息都以一个数字为名称的目录形式保存在/proc/目录下.
+
+每个进程的目录中，都包含了与该进程相关的一系列信息，如进程状态、进程占用的资源、进程的命令行、进程的环境变量以及与该进程相关的文件等等。其中，和父子关系相关的信息保存在/proc/[PID]/status文件中
+
+其中，PPid表示该进程的父进程ID。在ptree命令的实现过程中，当遍历到一个进程时，我们可以通过读取/proc/[PID]/status文件中的PPid键值对，来判断该进程的父进程ID。
+
+
+
+# devmem 读写物理地址
+
+Usage: devmem ADDRESS [WIDTH [VALUE]]
+
+Read/write from physical address
+
+ ADDRESS Address to act upon
+ WIDTH Width (8/16/...)
+ VALUE Data to be written
+
+ # tail \ head
+
+tail显示最后n行,不带默认10行
+head显示最前n行,不带默认10行
+```shell
+tail -n xxx  a.txt
+```
+-f 实时监控
+tail -f /var/log/syslog
+
+
+从文件打印 N 字节数据
+使用 -c 选项，可以从文件中打印 n 个字节的数据。
+```
+$ tail -c 400 /var/log/kern.log #tail命令将从文件底部显示400字节的数据
+$ tail -c 4k /var/log/kern.log #tail命令将从文件底部显示4K字节的数据
+$ tail -c 4M /var/log/kern.log #tail命令将从文件底部显示4M字节的数据
+```
+
+# hexdump
+
+

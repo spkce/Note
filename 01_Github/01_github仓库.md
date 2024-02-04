@@ -68,6 +68,8 @@ $ git fetch --depth 1 origin remote_branch_name
 $ git checkout remote_branch_name
 ```
 
+要克隆一个包括子模块的仓库，可以使用git clone命令，并指定--recursive选项
+
 # 设置git 默认编辑器
 git config --global core.editor vim
 
