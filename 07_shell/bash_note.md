@@ -132,3 +132,8 @@ $ tail -c 4M /var/log/kern.log #tail命令将从文件底部显示4M字节的数
 # hexdump
 
 
+
+# du
+du -h --max-depth=1 --exclude .snapshot
+
+# quota -s
