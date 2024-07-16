@@ -62,7 +62,7 @@ git cherry-pick bad object
 ## 回退到某个版本
  如果想恢复到之前某个提交的版本，且那个版本之后提交的版本我们都不要了，就可以用这种方法
 
- git reset --hard commitId
+ git reset commitId
 
 git revert是用于“反做”某一个版本，以达到撤销该版本的修改的目的。比如，我们commit了三个版本（版本一、版本二、 版本三），突然发现版本二不行（如：有bug），想要撤销版本二，但又不想影响撤销版本三的提交，就可以用 git revert 命令来反做版本二，生成新的版本四，这个版本四里会保留版本三的东西，但撤销了版本二的东西。
  git revert
