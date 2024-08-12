@@ -414,3 +414,6 @@ Ctrl + L：刷新窗口
 Ctrl + x，再按1：单窗口模式，显示一个窗口
 Ctrl + x，再按2：双窗口模式，显示两个窗口
 Ctrl + x，再按a：回到传统模式，即退出layout，回到执行layout之前的调试窗口。
+
+
+# thread apply all
