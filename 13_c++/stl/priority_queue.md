@@ -27,17 +27,8 @@ int main() {
 ```
 或者：
 ```c++
-#include <iostream>
-#include <queue>
-struct Compare {
-    bool operator()(int a, int b) {
-        return a > b;
-    }
-};
-int main() {
-    std::priority_queue<int, std::vector<int>, greater<int>> pq;
-    return 0;
-}
+priority_queue<int, vector<int>, less<int>> queMin;
+priority_queue<int, vector<int>, greater<int>> queMax;
 ```
 
 ```c++
@@ -45,5 +36,5 @@ static bool cmp(pair<int, int>& m, pair<int, int>& n)
 {
     return m.second > n.second;
 }
-priority_queue<pair<int, int>, vector<pair<int, int>>, decltype(&cmp)>
+priority_queue<pair<int, int>, vector<pair<int, int>>, decltype(&cmp)> q(cmp);
 ```
