@@ -27,8 +27,8 @@ int main() {
 ```
 或者：
 ```c++
-priority_queue<int, vector<int>, less<int>> queMin;
-priority_queue<int, vector<int>, greater<int>> queMax;
+priority_queue<int, vector<int>, less<int>> que; //大堆
+priority_queue<int, vector<int>, greater<int>> queMax; //小堆
 ```
 
 ```c++
