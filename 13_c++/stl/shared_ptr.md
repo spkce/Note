@@ -10,6 +10,7 @@ std::shared_ptr<MyClass> ptr3 = ptr1;
 具有独占所有权语义，一个对象只能被一个unique_ptr所拥有，当unique_ptr被销毁时，它所指向的对象也会随之被销毁
 ```c++
 std::unique_ptr<MyClass> ptr1 = std::make_unique<MyClass>()
+std::unique_ptr<MyClass> ptr3 = std::move(ptr1); 
 ```
 
 # weak_ptr
