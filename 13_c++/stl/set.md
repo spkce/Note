@@ -22,5 +22,30 @@ int main() {
     // 输出：5 4 3 2 1
 }
 ```
+要存储自定义变量，自定义变量需要实现小于函数`operator < `
+```c++
+class Edge 
+{ 
+public: 
+Edge(int u, int v): u(u), v(v){}     
+bool operator < (const Edge& edge) const    
+{ 
+    return this->u < edge.u;     
+}    //为了方便起见设为public    int u;      int v; 
+};
+```
+或实现比较类
+```c++
+std::set<Edge> edge_set; 
+class Comp 
+{ 
+public: 
+bool operator()(const Edge& left, const Edge& right) 
+{         
+    return left.u < right.u;     
+} 
+}; 
 
+std::set<Edge, Comp> edge_set2; 
+```
 ## unordered_set
