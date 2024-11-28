@@ -203,3 +203,15 @@ void swap<CA>(CA& a, CA& b)
 
 3. 库
 首先是泛用库boost，界面库Qt，通信库ZeroMQ，视觉库OpenCV，并发库tbb，深度学习Caffe，序列化Protobuf，加上一些cppformat之类的小库。然后就是http客户端curl，http服务器 crow，gzip压缩zlib，json序列化nlohmann/json，二进制序列化protobuf，嵌入式数据库sqlite，日志库glog，参数解析库gflags，消息队列zmq，rpc库brpc，tcp网络库evpp，3d仿真osg，图形图像opencv，stl,boost,qt上面都讲过了。
+
+
+### 后缀表达式
+```c++
+int nums[] = {0,1,2,3};
+int *p = (int*)nums;
+int a0 = *p++;
+p = (int*)nums;
+int a1 = (*p)++;
+printf("a0=%d,a1=%d\n", a0, a1);
+//输出 a0=0,a1=0
+```
