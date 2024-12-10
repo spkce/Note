@@ -1,7 +1,7 @@
 #include <linux/module.h>
 #include <linux/types.h>
 #include <linux/fs.h>
-#include <linux/device.h>//½¨Á¢×Ô¶¯Éè±¸½ÚµãÒª°üº¬µÄÍ·ÎÄ¼ş
+#include <linux/device.h>//å»ºç«‹è‡ªåŠ¨è®¾å¤‡èŠ‚ç‚¹è¦åŒ…å«çš„å¤´æ–‡ä»¶
 #include <linux/errno.h>
 #include <linux/mm.h>
 #include <linux/sched.h>
@@ -16,53 +16,53 @@
 #define SECOND_MAJOR 248
 #define SECOND_MINOR 100
  
-static struct class *firstdrv_class;//×Ô¶¯½¨Á¢Éè±¸½ÚµãÊ±ÒªÓÃµ½Ò»¸öÀà
-static int second_major = SECOND_MAJOR;//¶¨ÒåÖ÷Éè±¸ºÅÎª248
-static int second_minor = SECOND_MINOR;//¶¨Òå´ÎÉè±¸ºÅÎª100
+static struct class *firstdrv_class;//è‡ªåŠ¨å»ºç«‹è®¾å¤‡èŠ‚ç‚¹æ—¶è¦ç”¨åˆ°ä¸€ä¸ªç±»
+static int second_major = SECOND_MAJOR;//å®šä¹‰ä¸»è®¾å¤‡å·ä¸º248
+static int second_minor = SECOND_MINOR;//å®šä¹‰æ¬¡è®¾å¤‡å·ä¸º100
  
-//Éè±¸½á¹¹Ìå
+//è®¾å¤‡ç»“æ„ä½“
 struct second_dev 
 {
  struct cdev cdev;
- atomic_t counter;//¶¨ÒåÒ»¸öÔ­×Ó±äÁ¿
- struct timer_list s_timer;//¶¨Òå¶¨Ê±Æ÷½á¹¹ÌåÀïÃæ°üº¬¶¨Ê±´¦Àíº¯Êı£¬¶¨Ê±µ½ÆÚÊ±¼äµÈ
+ atomic_t counter;//å®šä¹‰ä¸€ä¸ªåŸå­å˜é‡
+ struct timer_list s_timer;//å®šä¹‰å®šæ—¶å™¨ç»“æ„ä½“é‡Œé¢åŒ…å«å®šæ—¶å¤„ç†å‡½æ•°ï¼Œå®šæ—¶åˆ°æœŸæ—¶é—´ç­‰
 };
  
-struct second_dev *second_devp;//Éè±¸½á¹¹ÌåÖ¸Õë
-//¶¨Ê±Æ÷´¦Àíº¯Êı
+struct second_dev *second_devp;//è®¾å¤‡ç»“æ„ä½“æŒ‡é’ˆ
+//å®šæ—¶å™¨å¤„ç†å‡½æ•°
 static void second_timer_handle(unsigned long arg)
 {
-	mod_timer(&second_devp->s_timer,jiffies + HZ);//ÖØĞÂ¼ÓÔØ¶¨Ê±Æ÷µÄµ½ÆÚÊ±¼äÔÚÔ­À´»ù´¡ÉÏ¼Ó¶à1s
-	atomic_inc(&second_devp->counter);//Ô­×Ó±äÁ¿Öµ¼Ó1
-	printk(KERN_NOTICE "current jiffies is %ld\n",jiffies);//´òÓ¡£¬ÎÒÃÇ¶¨Ê±´¦Àíº¯ÊıÊµÏÖ¹¦ÄÜ¾ÍÊÇ´òÓ¡
+	mod_timer(&second_devp->s_timer,jiffies + HZ);//é‡æ–°åŠ è½½å®šæ—¶å™¨çš„åˆ°æœŸæ—¶é—´åœ¨åŸæ¥åŸºç¡€ä¸ŠåŠ å¤š1s
+	atomic_inc(&second_devp->counter);//åŸå­å˜é‡å€¼åŠ 1
+	printk(KERN_NOTICE "current jiffies is %ld\n",jiffies);//æ‰“å°ï¼Œæˆ‘ä»¬å®šæ—¶å¤„ç†å‡½æ•°å®ç°åŠŸèƒ½å°±æ˜¯æ‰“å°
 }
  
-int second_open(struct inode *inode,struct file *filp)//´ò¿ªº¯Êı
+int second_open(struct inode *inode,struct file *filp)//æ‰“å¼€å‡½æ•°
 {
-	init_timer(&second_devp->s_timer);//³õÊ¼»¯¶¨Ê±Æ÷
-	second_devp->s_timer.function = &second_timer_handle;//Ö¸¶¨¶¨Ê±´¦Àíº¯Êı
-	second_devp->s_timer.expires = jiffies + HZ;//Ö¸¶¨¶¨Ê±µ½ÆÚÊ±¼ä£¬ÔÚÔ­À´ÉÏ1sºóµ÷ÓÃ¶¨Ê±´¦Àíº¯Êı
-	add_timer(&second_devp->s_timer);//½«¶¨Ê±Æ÷¼Óµ½ÄÚºË¶¯Ì¬¶¨Ê±Æ÷Á´±íÖĞ£¬×¢²á¶¨Ê±Æ÷
-	atomic_set(&second_devp->counter,0);//³õÊ¼»¯Ô­×Ó±äÁ¿µÄÖµÎª0
+	init_timer(&second_devp->s_timer);//åˆå§‹åŒ–å®šæ—¶å™¨
+	second_devp->s_timer.function = &second_timer_handle;//æŒ‡å®šå®šæ—¶å¤„ç†å‡½æ•°
+	second_devp->s_timer.expires = jiffies + HZ;//æŒ‡å®šå®šæ—¶åˆ°æœŸæ—¶é—´ï¼Œåœ¨åŸæ¥ä¸Š1såè°ƒç”¨å®šæ—¶å¤„ç†å‡½æ•°
+	add_timer(&second_devp->s_timer);//å°†å®šæ—¶å™¨åŠ åˆ°å†…æ ¸åŠ¨æ€å®šæ—¶å™¨é“¾è¡¨ä¸­ï¼Œæ³¨å†Œå®šæ—¶å™¨
+	atomic_set(&second_devp->counter,0);//åˆå§‹åŒ–åŸå­å˜é‡çš„å€¼ä¸º0
 	return 0;
 }
  
-//¹Ø±ÕÎÄ¼ş
+//å…³é—­æ–‡ä»¶
 int second_release(struct inode *inode,struct file *filp)
 {
-	del_timer(&second_devp->s_timer);//É¾³ı¶¨Ê±Æ÷
+	del_timer(&second_devp->s_timer);//åˆ é™¤å®šæ—¶å™¨
 	return 0;
 }
  
 static ssize_t second_read(struct file *filp,char __user *buf,size_t count,loff_t *ppos)
 {
 	int counter;
-	counter = atomic_read(&second_devp->counter);//»ñµÃÔ­×Ó±äÁ¿µÄÖµ
+	counter = atomic_read(&second_devp->counter);//è·å¾—åŸå­å˜é‡çš„å€¼
  
-	if(put_user(counter,(int *)buf))//put_user()ÊµÏÖÄÚºË->ÓÃ»§
+	if(put_user(counter,(int *)buf))//put_user()å®ç°å†…æ ¸->ç”¨æˆ·
 		return -EFAULT;
 	else
- 		return sizeof(unsigned int);//·µ»Ø×Ö½Ú
+ 		return sizeof(unsigned int);//è¿”å›å­—èŠ‚
 }
  
 static const struct file_operations second_fops = {
@@ -72,13 +72,13 @@ static const struct file_operations second_fops = {
  .read  = second_read,
 };
  
-//ÓÃÓÚcdev³õÊ¼»¯º¯Êı
+//ç”¨äºcdevåˆå§‹åŒ–å‡½æ•°
 static void second_setup_cdev(struct second_dev *dev,int index)
 {
-	int err,devno = MKDEV(second_major,index);//ºÏ²¢Ö÷´ÎÉè±¸ºÅ
-	cdev_init(&dev->cdev,&second_fops);//³õÊ¼»¯Éè±¸£¨cdev£©£¬½¨Á¢cdevºÍfile_operations Á¬½Ó
+	int err,devno = MKDEV(second_major,index);//åˆå¹¶ä¸»æ¬¡è®¾å¤‡å·
+	cdev_init(&dev->cdev,&second_fops);//åˆå§‹åŒ–è®¾å¤‡ï¼ˆcdevï¼‰ï¼Œå»ºç«‹cdevå’Œfile_operations è¿æ¥
 	dev->cdev.owner = THIS_MODULE;
-	err = cdev_add(&dev->cdev,devno,1);//×¢²áÉè±¸µ½ÄÚºË
+	err = cdev_add(&dev->cdev,devno,1);//æ³¨å†Œè®¾å¤‡åˆ°å†…æ ¸
  
 	if(err)
 		printk(KERN_NOTICE "Error %d adding LED%d",err,index);
@@ -87,31 +87,31 @@ static void second_setup_cdev(struct second_dev *dev,int index)
 int second_init(void)
 {
 	int ret;
-	dev_t devno = MKDEV(second_major,second_minor);//ºÏ²¢Ö÷´ÎÉè±¸ºÅÎªdev_t¸ñÊ½
+	dev_t devno = MKDEV(second_major,second_minor);//åˆå¹¶ä¸»æ¬¡è®¾å¤‡å·ä¸ºdev_tæ ¼å¼
  
 	if(second_major)
-	 ret = register_chrdev_region(devno,1,"second");//ÉêÇëÉè±¸ºÅ
+	 ret = register_chrdev_region(devno,1,"second");//ç”³è¯·è®¾å¤‡å·
 	else
 	{
-	 ret = alloc_chrdev_region(&devno, 0, 1, "second");//¶¯Ì¬ÉêÇëÉè±¸ºÅ
-	 second_major = MAJOR(devno);//»ñµÃÖ÷Éè±¸ºÅ
+	 ret = alloc_chrdev_region(&devno, 0, 1, "second");//åŠ¨æ€ç”³è¯·è®¾å¤‡å·
+	 second_major = MAJOR(devno);//è·å¾—ä¸»è®¾å¤‡å·
 	 second_minor = MINOR(devno);
 	}
  
 	if(ret < 0)
 		return ret;
  
-	 firstdrv_class = class_create(THIS_MODULE, "second_major");//½¨Á¢firstdrvÕâ¸öÀà
-	 device_create(firstdrv_class,NULL,devno,NULL,"second");//×Ô¶¯´´½¨Éè±¸½Úµã/dev/second
+	 firstdrv_class = class_create(THIS_MODULE, "second_major");//å»ºç«‹firstdrvè¿™ä¸ªç±»
+	 device_create(firstdrv_class,NULL,devno,NULL,"second");//è‡ªåŠ¨åˆ›å»ºè®¾å¤‡èŠ‚ç‚¹/dev/second
  
-	second_devp = kmalloc(sizeof(struct second_dev),GFP_KERNEL);//¶¯Ì¬ÉêÇëÉè±¸½á¹¹ÌåÄÚ´æ
+	second_devp = kmalloc(sizeof(struct second_dev),GFP_KERNEL);//åŠ¨æ€ç”³è¯·è®¾å¤‡ç»“æ„ä½“å†…å­˜
 	if(!second_devp)
 	{
 		 ret = -ENOMEM;
 		 goto fail_malloc;
 	}
-	memset(second_devp,0,sizeof(struct second_dev));//Çå³ıÉè±¸½á¹¹ÌåÄÚ´æ
-	second_setup_cdev(second_devp,second_minor);//³õÊ¼»¯cdev
+	memset(second_devp,0,sizeof(struct second_dev));//æ¸…é™¤è®¾å¤‡ç»“æ„ä½“å†…å­˜
+	second_setup_cdev(second_devp,second_minor);//åˆå§‹åŒ–cdev
 	return 0;
  
 	fail_malloc:
@@ -121,11 +121,11 @@ int second_init(void)
  
 void second_exit(void)
 {
-	cdev_del(&second_devp->cdev);//×¢Ïúcdev
-	kfree(second_devp);//ÊÍ·ÅÉè±¸½á¹¹ÌåÄÚ´æ
-	unregister_chrdev_region(MKDEV(second_major,second_minor),1);//ÊÍ·ÅÉè±¸ºÅ
+	cdev_del(&second_devp->cdev);//æ³¨é”€cdev
+	kfree(second_devp);//é‡Šæ”¾è®¾å¤‡ç»“æ„ä½“å†…å­˜
+	unregister_chrdev_region(MKDEV(second_major,second_minor),1);//é‡Šæ”¾è®¾å¤‡å·
 	device_destroy(firstdrv_class,MKDEV(second_major,second_minor));
-	class_destroy(firstdrv_class);//ÊÍ·ÅÕâ¸öÀà£¬¸ÉµôËü
+	class_destroy(firstdrv_class);//é‡Šæ”¾è¿™ä¸ªç±»ï¼Œå¹²æ‰å®ƒ
 }
  
 MODULE_LICENSE("Dual BSD/GPL");
