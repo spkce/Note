@@ -44,3 +44,11 @@ $(CPPOBJS) : $(DIR_OBJ)/%.o: %.cpp
 	@mkdir -p $(dir $(@))
 	@$(CXX) -o $(DIR_OBJ)/$(notdir $@) -c $< $(CFLAGS) $(INC)
 ```
+
+# make -f 指定构建文件
+
+make -f xxx.mk 。指定xxx.mk 而不是默认的makefile。‌常用于多Makefile管理
+
+
+# --sys_root 
+可以指定一个干净的文件系统
