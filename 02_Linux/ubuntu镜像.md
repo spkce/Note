@@ -128,3 +128,7 @@ e2fsck -p -f linuxroot.img
 ### 调整大小
 resize2fs 命令是调整 ext2、ext3 和 ext4 文件系统大小的有效工具，如果碰到启动不进桌面, 可以尝试不要resize2fs*
 resize2fs -M linuxroot.img
+## 镜像扩展
+dd if=/dev/zero bs=1G count=1 >> rootfs.img
+e2fsck -f rootfs.img
+resize2fs rootfs.img
